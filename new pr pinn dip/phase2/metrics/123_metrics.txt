@@ -1,0 +1,9 @@
+Benchmark Metrics for 123 (Phase 2)
+========================================
+Iteration 0500 -> Loss: 0.000140 | PSNR: 19.22 dB | SSIM: 0.7566
+Iteration 1000 -> Loss: 0.000048 | PSNR: 19.23 dB | SSIM: 0.7690
+Iteration 1500 -> Loss: 0.000023 | PSNR: 19.24 dB | SSIM: 0.7727
+Iteration 2000 -> Loss: 0.000014 | PSNR: 19.23 dB | SSIM: 0.7728
+Iteration 3000 -> Loss: 0.000018 | PSNR: 19.23 dB | SSIM: 0.7721
+Iteration 4000 -> Loss: 0.000005 | PSNR: 19.23 dB | SSIM: 0.7725
+Iteration 5000 -> Loss: 0.000003 | PSNR: 19.23 dB | SSIM: 0.7732

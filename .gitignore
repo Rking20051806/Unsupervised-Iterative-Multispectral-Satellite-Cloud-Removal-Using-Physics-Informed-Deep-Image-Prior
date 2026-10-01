@@ -2,23 +2,28 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.log
+.DS_Store
+.env
 
 # Virtual Environments
 .venv/
 venv/
 env/
 ENV/
+node_modules/
+dist/
+.vite/
 
-# Large Datasets & Satellite Tiles
+# Large Datasets & Satellite Tiles (Store on Google Drive)
 *.SAFE/
 cogs/
 China_COGs/
 RICE_DATASET/
 datasets/
 scratch/
-new pr pinn dip/
 
-# Pre-trained Model Weights / Checkpoints
+# Large Pre-trained Weights / Checkpoints (Store on Google Drive)
 models/
 *.pt
 *.pth
@@ -26,13 +31,18 @@ models/
 *.hdf5
 *.ckpt
 
-# Output directories & generated results
+# Output directories & raw generated results
 outputs/
 results/
 RESULTS OF RICE DATASET/
 web/static/outputs/
 
-# Logs & Temporary files
-*.log
-.DS_Store
-.env
+# Ignore heavy phase images inside 'new pr pinn dip' but keep frontend & code
+new pr pinn dip/.venv/
+new pr pinn dip/node_modules/
+new pr pinn dip/dist/
+new pr pinn dip/__pycache__/
+new pr pinn dip/frontend/node_modules/
+new pr pinn dip/frontend/dist/
+new pr pinn dip/phase1/reconstructed/
+new pr pinn dip/phase2/output/
