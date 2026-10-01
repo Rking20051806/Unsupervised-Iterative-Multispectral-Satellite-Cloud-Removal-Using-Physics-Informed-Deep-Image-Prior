@@ -147,22 +147,35 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 
 # Upgrade pip and install all project dependencies
-pip install --upgrade pip
-pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
 ### 2. Verify GPU/CUDA Support
 PyTorch will automatically detect NVIDIA GPUs with CUDA acceleration:
 ```powershell
-python -c "import torch; print('CUDA Available:', torch.cuda.is_available(), '| Device:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU')"
+.\.venv\Scripts\python.exe -c "import torch; print('CUDA Available:', torch.cuda.is_available(), '| Device:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU')"
 ```
 
 ### 3. Launch the Web Application
+Directly run the application using the virtual environment interpreter:
 ```powershell
+# Run using active virtual environment python
+.\.venv\Scripts\python.exe main.py
+
+# Or if environment is activated:
 python main.py
 ```
 - 🌐 **Web Dashboard UI**: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 - 📚 **FastAPI Swagger Docs**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+
+### 4. React + Vite Modern Frontend (`new pr pinn dip/frontend`)
+```powershell
+cd "new pr pinn dip/frontend"
+npm install
+npm run dev
+```
+- 🌐 **React Frontend UI**: [http://localhost:5173](http://localhost:5173)
 - 📖 **Redoc Alternative API Docs**: [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
 
 ---
