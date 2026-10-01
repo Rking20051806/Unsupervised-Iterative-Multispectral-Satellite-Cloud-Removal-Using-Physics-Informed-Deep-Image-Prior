@@ -1,0 +1,38 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Large Datasets & Satellite Tiles
+*.SAFE/
+cogs/
+China_COGs/
+RICE_DATASET/
+datasets/
+scratch/
+new pr pinn dip/
+
+# Pre-trained Model Weights / Checkpoints
+models/
+*.pt
+*.pth
+*.h5
+*.hdf5
+*.ckpt
+
+# Output directories & generated results
+outputs/
+results/
+RESULTS OF RICE DATASET/
+web/static/outputs/
+
+# Logs & Temporary files
+*.log
+.DS_Store
+.env

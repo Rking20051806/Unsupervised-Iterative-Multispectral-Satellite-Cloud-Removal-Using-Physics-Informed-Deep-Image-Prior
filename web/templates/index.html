@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en" class="dark">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CloudVision AI — DIP+PINN Cloud Removal</title>
+  <script>
+    // Initialize theme from localStorage, default to dark
+    const theme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(theme);
+  </script>
+  <meta name="description"
+    content="Physics-Informed Deep Image Prior cloud removal system for Sentinel-2 GeoTIFF and RICE benchmark datasets. Real-time DIP+PINN optimization with PSNR, SSIM, SAM, and PRS metrics." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css?v=6.6" />
+  <link rel="stylesheet" href="/static/css/leaflet.css" />
+  <script src="/static/js/leaflet.js"></script>
+  <script src="/static/js/chart.umd.min.js"></script>
+  <script defer src="/static/app.js?v=8.4"></script>
+  <script defer src="/static/rice2_explorer/rice2_explorer.js?v=3.6"></script>
+  <script defer src="/static/rice2_app.js?v=1.0"></script>
+
+  <!-- Tailwind CSS -->
+  <script src="/static/js/tailwindcss.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              darkbg: '#0F1115',
+              darksurface: '#1A1D23',
+              lightbg: '#FAFAFA',
+              lightsurface: '#FFFFFF',
+              teal: '#2DD4BF',
+              tealHover: '#14B8A6',
+              tealLight: '#0F766E',
+              amber: '#F2A623',
+              amberLight: '#B45309'
+            }
+          },
+          borderRadius: {
+            'premium': '14px'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="/static/js/lucide.js"></script>
+
+  <!-- Sentinel-2 Logic Override -->
+</head>
+
+<body>
+  <!-- Global Top Laser Loading Bar -->
+  <div id="top-loading-bar" class="top-loading-bar"></div>
+
+  <!-- Animated Background Orbs -->
+  <div class="bg-orb bg-orb--1"></div>
+  <div class="bg-orb bg-orb--2"></div>
+  <div class="bg-orb bg-orb--3"></div>
+
+  <div class="page-shell">
+    <!-- ═══ HEADER ═══════════════════════════════════════════════════════ -->
+    <header class="hero">
+      <div class="hero__copy">
+        <div class="hero__badge">
+          <span class="pulse-dot"></span>
+          Physics-Informed Deep Image Prior · Sentinel-2 · RICE Benchmark
+        </div>
+        <h1>CloudVision<span class="hero__accent"> AI</span></h1>
+        <p>No-reference cloud removal using DIP + PINN physics constraints (ASM · RTE · NDVI) on Sentinel-2
+          multispectral GeoTIFF imagery. Full metrics: PSNR, SSIM, SAM, PRS, Dice, IoU.</p>
+        <div class="hero__kpis">
+          <div class="kpi-card">
+            <span class="kpi-card__icon">🛰️</span>
+            <div>
+              <span class="kpi-card__label">Sentinel-2</span>
+              <span class="kpi-card__value" id="s2-status">Initializing…</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-card__icon">📦</span>
+            <div>
+              <span class="kpi-card__label">RICE1 Samples</span>
+              <span class="kpi-card__value" id="rice1-count">—</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-card__icon">📦</span>
+            <div>
+              <span class="kpi-card__label">RICE2 Samples</span>
+              <span class="kpi-card__value" id="rice2-count">—</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-card__icon">⚡</span>
+            <div>
+              <span class="kpi-card__label">Status</span>
+              <span class="kpi-card__value" id="service-status">Ready</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hero__visual">
+        <div class="hero__visual-ring hero__visual-ring--outer"></div>
+        <div class="hero__visual-ring hero__visual-ring--inner"></div>
+        <div class="hero__visual-core">
+          <span class="hero__visual-label">DIP+PINN</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ═══ MAIN LAYOUT ═══════════════════════════════════════════════════ -->
+    <main class="workspace">
+
+      <!-- ── Sidebar ──────────────────────────────────────────────── -->
+      <button id="sidebar-open-btn" class="sidebar-open-btn" title="Open Sidebar"
+        style="display: none; background: rgba(8, 12, 28, 0.85); border: 1px solid var(--border-glow); color: var(--neon-cyan); border-radius: var(--r-md); padding: 6px 14px; cursor: pointer; font-size: 0.85rem; font-weight: 600; align-items: center; gap: 6px; backdrop-filter: blur(10px); position: absolute; top: -45px; left: 0; z-index: 100;">🗂️
+        Open Sidebar</button>
+      <aside class="sidebar glass-panel">
+        <div class="sidebar__section">
+          <h2 class="sidebar__title" style="display: flex; justify-content: space-between; align-items: center;">
+            <span><span class="sidebar__title-icon">🗂️</span> Dataset Browser</span>
+            <button id="sidebar-toggle-btn" type="button" class="sidebar-toggle-btn" title="Hide Sidebar"
+              style="background: rgba(99, 102, 241, 0.15); border: 1px solid var(--border); color: var(--text-primary); border-radius: var(--r-md); padding: 4px 10px; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: var(--transition);">◀
+              Hide</button>
+          </h2>
+          <p class="sidebar__sub">Select a dataset, sample, and analysis mode.</p>
+        </div>
+
+        <div class="sidebar__section">
+          <label class="field-label" for="split-select">Dataset Split</label>
+          <select id="split-select" class="glass-select">
+            <option value="RICE1">RICE1 — Paired Cloudy / Clean (500 samples)</option>
+            <option value="RICE2">RICE2 — Cloudy + Mask (736 samples)</option>
+          </select>
+        </div>
+
+        <div class="sidebar__section">
+          <div class="field-row">
+            <label class="field-label" for="sample-range">Sample Index</label>
+            <span class="badge" id="sample-meta">Loading…</span>
+          </div>
+          <input type="range" id="sample-range" class="slider" min="0" max="0" value="0" step="1" />
+          <div class="slider-readout">
+            <span id="sample-index-label">#0</span>
+            <span id="sample-name-label" class="text-muted">—</span>
+          </div>
+        </div>
+
+        <div class="sidebar__section">
+          <div class="field-row">
+            <label class="field-label" for="sensitivity-range">Cloud Sensitivity</label>
+            <span id="sensitivity-value" class="badge">0.75</span>
+          </div>
+          <input type="range" id="sensitivity-range" class="slider" min="0.30" max="1.00" value="0.75" step="0.05" />
+        </div>
+
+        <div class="sidebar__section">
+          <label class="field-label" for="upload-input">Upload Custom Image</label>
+          <div class="upload-zone" id="upload-box">
+            <input type="file" id="upload-input" accept="image/*" />
+            <div class="upload-zone__content">
+              <span class="upload-zone__icon" id="upload-icon">☁️</span>
+              <img id="upload-preview"
+                style="display: none; max-width: 100%; max-height: 80px; border-radius: var(--r-md); object-fit: contain; margin-bottom: 6px;" />
+              <span class="upload-zone__text" id="upload-text">Drop an image or click to browse</span>
+              <span id="upload-name" class="upload-zone__name">No file selected</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar__actions">
+          <button class="btn btn--primary" id="run-demo-btn">▶ Analyze Sample</button>
+          <button class="btn btn--secondary" id="analyze-upload-btn">⬆ Analyze Upload</button>
+          <button class="btn btn--ghost" id="clear-upload-btn">✕ Clear</button>
+        </div>
+      </aside>
+
+      <!-- ── Main Content ────────────────────────────────────────── -->
+      <section class="content glass-panel">
+        <div class="content__topbar">
+          <div class="content__title-group">
+            <h2 id="content-title">Live Analysis Workspace</h2>
+            <p id="analysis-description" class="text-muted">Select a sample and run analysis.</p>
+          </div>
+          <div class="status-pill" id="analysis-pill">Awaiting</div>
+        </div>
+
+        <!-- Tab Bar -->
+        <div class="tab-bar" role="tablist">
+          <!-- Main Workflows -->
+          <button class="tab-btn tab-btn--active" data-tab="detection" role="tab">☁ Detection & ✨ Removal</button>
+
+          <!-- Explorers -->
+          <button class="tab-btn" data-tab="classification" role="tab">🧠 RICE 1 Explorer</button>
+          <button class="tab-btn" data-tab="rice2-classification" role="tab">🧠 RICE 2 Explorer</button>
+          <button class="tab-btn" data-tab="rice2-page" role="tab">🌾 RICE2 DIP+Pinn Explorer</button>
+
+          <!-- Models -->
+          <button class="tab-btn" data-tab="dippinn" role="tab">🌀 DIP+PINN</button>
+          <button class="tab-btn" data-tab="supervised-unet" role="tab">🧬 Supervised U-Net</button>
+
+          <!-- Evaluation -->
+          <button class="tab-btn" data-tab="rice-bench" role="tab">📊 RICE Benchmark</button>
+          <button class="tab-btn" data-tab="metrics" role="tab">📈 Metrics</button>
+
+          <!-- Docs & Data -->
+          <button class="tab-btn" data-tab="hyperparameter-guide" role="tab">⚙️ Hyperparameter Guide</button>
+          <button class="tab-btn" data-tab="s2-workspace" role="tab">🛰 Sentinel-2A</button>
+          <button class="tab-btn" data-tab="methodology" role="tab">🔬 Methodology</button>
+          <button class="tab-btn" data-tab="system-docs" role="tab">📜 System Docs</button>
+        </div>
+
+        <!-- ── TAB: Detection & Removal ─────────────────────────────────────── -->
+        {% include 'partials/tab_detection.html' %}
+
+        <!-- ── TAB: U-Net Classify & XAI ────────────────────────────── -->
+        {% include 'partials/tab_classification.html' %}
+
+        <!-- ── TAB: RICE 2 Explorer ────────────────────────────── -->
+        {% include 'partials/tab_rice2_classification.html' %}
+
+        <!-- ── TAB: RICE Benchmark ────────────────────────────────── -->
+        {% include 'partials/tab_rice_bench.html' %}
+
+
+
+        <!-- ── TAB: RICE2 Dedicated Explorer ─────────────────────── -->
+        {% include 'partials/tab_rice2_page.html' %}
+
+        <!-- ── TAB: Hyperparameter Guide & Calibration ────────────── -->
+        {% include 'partials/tab_hyperparameter_guide.html' %}
+
+        {% include 'partials/tab_s2_workspace.html' %}
+
+        <!-- ── TAB: Methodology & Formulations ── -->
+        {% include 'partials/tab_methodology.html' %}
+
+        <!-- ── TAB: Supervised U-Net (ISRO Report) ────────────────── -->
+        {% include 'partials/tab_supervised_unet.html' %}
+
+        <!-- ── TAB: DIP+PINN ───────────────────────────────────────── -->
+        {% include 'partials/tab_dippinn.html' %}
+
+
+
+        <!-- ── TAB: Metrics ───────────────────────────────────────── -->
+        {% include 'partials/tab_metrics.html' %}
+
+        <!-- ── TAB: System Documentation ───────────────────────────── -->
+        {% include 'partials/tab_system_docs.html' %}
+
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <p>CloudVision AI · Physics-Informed Deep Image Prior for Sentinel-2 Cloud Removal · No Ground Truth Required
+        </p>
+        <p class="text-muted">DIP + ASM + RTE (Ångström) + NDVI Consistency Loss · PRS · PSNR · SSIM · SAM · Dice · IoU
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Theme toggle functionality
+    function toggleTheme() {
+      const root = document.documentElement;
+      let isLight = false;
+      if (root.classList.contains('light')) {
+        root.classList.remove('light');
+        root.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        root.classList.remove('dark');
+        root.classList.add('light');
+        localStorage.setItem('theme', 'light');
+        isLight = true;
+      }
+
+      // Trigger sun/moon emoji particles from theme toggle button center
+      const toggleBtn = document.querySelector('[title="Toggle Light/Dark Theme"]');
+      if (toggleBtn) {
+        const rect = toggleBtn.getBoundingClientRect();
+        const x = window.scrollX + rect.left + rect.width / 2;
+        const y = window.scrollY + rect.top + rect.height / 2;
+
+        const themeEmojis = isLight ? ['☀️', '✨', '🌤️', '💛', '💡', '🔥'] : ['🌙', '🌟', '🌌', '💙', '💤', '🪐'];
+        const count = 15;
+        for (let i = 0; i < count; i++) {
+          const p = document.createElement('div');
+          p.className = 'emoji-particle';
+          p.textContent = themeEmojis[Math.floor(Math.random() * themeEmojis.length)];
+
+          p.style.left = `${x}px`;
+          p.style.top = `${y}px`;
+
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 30 + Math.random() * 95;
+          const tx = Math.cos(angle) * distance;
+          const ty = Math.sin(angle) * distance;
+          const rot = (Math.random() - 0.5) * 360;
+
+          p.style.setProperty('--tx', `${tx}px`);
+          p.style.setProperty('--ty', `${ty}px`);
+          p.style.setProperty('--rot', `${rot}deg`);
+
+          document.body.appendChild(p);
+          setTimeout(() => p.remove(), 1400);
+        }
+      }
+    }
+  </script>
+
+  <!-- Floating toast alerts container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-[99999] flex flex-col gap-3 pointer-events-none"></div>
+
+</body>
+
+</html>

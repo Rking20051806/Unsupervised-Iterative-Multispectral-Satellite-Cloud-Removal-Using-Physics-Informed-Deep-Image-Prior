@@ -1,0 +1,64 @@
+{
+  "dataset_type": "RICE-1 (Thin Cloud / Hazy Translucent Layer)",
+  "physical_mechanism": "Atmospheric Scattering Model (ASM) Radiance Inversion + Angstrom RTE",
+  "image_properties": {
+    "resolution": "512x512",
+    "mean_luminance": 0.3876,
+    "std_luminance": 0.0375,
+    "max_luminance": 0.5612,
+    "estimated_cloud_coverage_pct": 20.63,
+    "dark_channel_mean": 0.3175,
+    "estimated_mean_transmission": 0.7301,
+    "estimated_min_transmission": 0.6333,
+    "gradient_energy": 0.0128,
+    "spectral_scattering_ratio": 0.9986
+  },
+  "optimal_hyperparameters": {
+    "lambda_asm": {
+      "min_safe": 0.3689,
+      "max_safe": 0.6851,
+      "best": 0.527
+    },
+    "lambda_rte": {
+      "min_safe": 0.012,
+      "max_safe": 0.03,
+      "best": 0.02
+    },
+    "noise_std": {
+      "min_safe": 0.0091,
+      "max_safe": 0.0182,
+      "best": 0.013
+    },
+    "lambda_tv": {
+      "min_safe": 6e-05,
+      "max_safe": 0.00024,
+      "best": 0.00012
+    },
+    "lambda_ndvi": {
+      "min_safe": 0.0329,
+      "max_safe": 0.0877,
+      "best": 0.0548
+    },
+    "lambda_t_prior": {
+      "min_safe": 0.066,
+      "max_safe": 0.165,
+      "best": 0.11
+    },
+    "learning_rate": {
+      "min_safe": 0.003,
+      "max_safe": 0.008,
+      "best": 0.005
+    },
+    "iterations": {
+      "fast_preview": 150,
+      "recommended_balanced": 350,
+      "high_precision": 500,
+      "full_convergence": 2000
+    }
+  },
+  "sample_info": {
+    "dataset": "RICE1",
+    "sample_id": "82",
+    "filename": "82.png"
+  }
+}

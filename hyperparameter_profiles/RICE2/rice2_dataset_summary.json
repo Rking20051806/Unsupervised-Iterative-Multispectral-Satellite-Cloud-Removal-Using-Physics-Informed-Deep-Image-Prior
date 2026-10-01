@@ -1,0 +1,56 @@
+{
+  "dataset": "RICE2",
+  "dataset_description": "Thick Cloud Masked Inpainting",
+  "total_samples_profiled": 736,
+  "dataset_parameter_ranges": {
+    "lambda_asm": {
+      "min_value": 0.05,
+      "max_value": 0.08,
+      "mean_value": 0.0579,
+      "median_value": 0.055,
+      "recommended_global_default": 0.055
+    },
+    "lambda_rte": {
+      "min_value": 0.025,
+      "max_value": 0.0417,
+      "mean_value": 0.0302,
+      "median_value": 0.0294,
+      "recommended_global_default": 0.0294
+    },
+    "noise_std": {
+      "min_value": 0.018,
+      "max_value": 0.028,
+      "mean_value": 0.0204,
+      "median_value": 0.0194,
+      "recommended_global_default": 0.0194
+    },
+    "lambda_tv": {
+      "min_value": 1.6e-05,
+      "max_value": 2.4e-05,
+      "mean_value": 2.3e-05,
+      "median_value": 2.4e-05,
+      "recommended_global_default": 2.4e-05
+    },
+    "lambda_ndvi": {
+      "min_value": 0.042,
+      "max_value": 0.0625,
+      "mean_value": 0.0465,
+      "median_value": 0.0448,
+      "recommended_global_default": 0.0448
+    },
+    "lambda_t_prior": {
+      "min_value": 0.6,
+      "max_value": 1.234,
+      "mean_value": 0.7503,
+      "median_value": 0.691,
+      "recommended_global_default": 0.691
+    },
+    "learning_rate": {
+      "min_value": 0.003,
+      "max_value": 0.003,
+      "mean_value": 0.003,
+      "median_value": 0.003,
+      "recommended_global_default": 0.003
+    }
+  }
+}

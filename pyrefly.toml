@@ -1,0 +1,23 @@
+[tool.pyrefly]
+# Point Pyrefly to the project's virtual environment so it can resolve imports
+python_interpreter = ".venv/Scripts/python.exe"
+
+# Project source root
+source_paths = ["."]
+
+# Exclude generated, cached, and non-source directories
+exclude = [
+    ".venv/**",
+    "__pycache__/**",
+    "*.egg-info/**",
+    ".git/**",
+    "outputs/**",
+    "results/**",
+    "notebooks/**",
+    "graphify-out/**",
+    "GRANULE/**",
+    "DATASTRIP/**",
+    "datasets/**",
+    "data/**",
+    "scratch/**",
+]

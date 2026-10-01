@@ -1,0 +1,343 @@
+<div class="tab-panel" id="tab-system-docs">
+          <div class="methodology-container" style="display: flex; flex-direction: column; gap: 24px; padding: 10px;">
+
+            <!-- Header Card -->
+            <div class="glass-card"
+              style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8)); border: 1px solid rgba(45, 212, 191, 0.3); border-radius: 14px; padding: 24px;">
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px; margin-bottom: 16px;">
+                <div>
+                  <h2
+                    style="font-size: 1.6rem; font-weight: 800; color: #2DD4BF; display: flex; align-items: center; gap: 10px;">
+                    <span>📜 System Documentation</span>
+                  </h2>
+                  <p style="color: var(--text-muted); margin-top: 4px;">Physics-Guided Satellite Image Reconstruction &
+                    Cloud Removal Architecture</p>
+                </div>
+                <span class="chip chip--blue" style="font-size: 0.85rem; padding: 6px 14px;">DIP + PINN Specs</span>
+              </div>
+            </div>
+
+            <!-- 📌 1. Project Overview & Motivation -->
+            <div class="glass-card">
+              <h3
+                style="font-size: 1.3rem; font-weight: 700; margin-bottom: 14px; border-bottom: 1px solid rgba(99, 102, 241, 0.2); padding-bottom: 8px; color: var(--neon-blue); display: flex; align-items: center; gap: 8px;">
+                📌 1. Project Overview & Motivation
+              </h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px;">
+                <div
+                  style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 16px;">
+                  <h4 style="color: #F87171; font-weight: 700; font-size: 1.05rem; margin-bottom: 8px;">Problem
+                    Statement</h4>
+                  <p style="color: var(--text-muted); font-size: 0.93rem; line-height: 1.6;">
+                    Satellite imagery frequently suffers from cloud cover, haze, atmospheric scattering, and missing
+                    sensor data. Standard image completion methods (like traditional interpolation or generic GAN-based
+                    inpainting) often generate unrealistic textures, blur artifacts, or violate the physical laws of
+                    radiative transfer and reflectance.
+                  </p>
+                </div>
+                <div
+                  style="background: rgba(45, 212, 191, 0.08); border: 1px solid rgba(45, 212, 191, 0.2); border-radius: 10px; padding: 16px;">
+                  <h4 style="color: #2DD4BF; font-weight: 700; font-size: 1.05rem; margin-bottom: 8px;">The PINN + DIP
+                    Solution</h4>
+                  <p style="color: var(--text-muted); font-size: 0.93rem; line-height: 1.6;">
+                    Combines <strong>Deep Image Prior (DIP)</strong> with <strong>Physics-Informed Neural Networks
+                      (PINNs)</strong> for zero-shot reconstruction without massive pre-trained datasets:
+                  </p>
+                  <ul
+                    style="margin-left: 18px; margin-top: 8px; color: var(--text-primary); font-size: 0.88rem; line-height: 1.6;">
+                    <li><strong>DIP:</strong> Uses an un-pretrained Encoder-Decoder network whose structure acts as an
+                      implicit spatial regularizer.</li>
+                    <li><strong>PINN:</strong> Integrates Atmospheric Scattering Model (ASM), Total Variation (TV), Dark
+                      Channel Prior (DCP), and Spectral Cross-Correlation.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- 🏗️ 2. Project Architecture & Stack -->
+            <div class="glass-card">
+              <h3
+                style="font-size: 1.3rem; font-weight: 700; margin-bottom: 14px; border-bottom: 1px solid rgba(99, 102, 241, 0.2); padding-bottom: 8px; color: var(--neon-purple); display: flex; align-items: center; gap: 8px;">
+                🏗️ 2. Project Architecture & Stack
+              </h3>
+              <div
+                style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 18px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #38BDF8; line-height: 1.4; overflow-x: auto; white-space: pre;">
+                +-------------------------------------------------------------+
+                | Vite + React Frontend |
+                | (Real-time Canvas, WebSocket Controls, Loss Telemetry) |
+                +------------------------------+------------------------------+
+                | HTTP / WebSocket (Port 8000)
+                v
+                +-------------------------------------------------------------+
+                | FastAPI Backend Server |
+                | (Threaded Runner & WS Broadcaster) |
+                +------------------------------+------------------------------+
+                | PyTorch Tensors
+                v
+                +-----------------------------------------------------------------------------------+
+                | PyTorch Neural Engine |
+                | +---------------------------+ +------------------------+ +-----------------+ |
+                | | Segmentation U-Net | | High Capacity DIP Net | | Physical Losses | |
+                | | (Real-time Cloud Detector)| | (Encoder-Decoder Arch) | | (ASM, TV, DCP) | |
+                | +---------------------------+ +------------------------+ +-----------------+ |
+                +-----------------------------------------------------------------------------------+</div>
+              <div style="margin-top: 16px;">
+                <h4 style="font-size: 1rem; color: var(--text-primary); font-weight: 600; margin-bottom: 8px;">Core
+                  Technology Stack:</h4>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                  <div
+                    style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px;">
+                    <strong style="color: #38BDF8; display: block; margin-bottom: 4px;">Frontend</strong>
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">React 18, Vite, Lucide Icons, WebSocket
+                      Client, HTML5 Canvas</span>
+                  </div>
+                  <div
+                    style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px;">
+                    <strong style="color: #A78BFA; display: block; margin-bottom: 4px;">Backend</strong>
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">Python 3.14, FastAPI, Uvicorn, Asyncio,
+                      WebSockets</span>
+                  </div>
+                  <div
+                    style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px;">
+                    <strong style="color: #34D399; display: block; margin-bottom: 4px;">Neural Engine</strong>
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">PyTorch, Torchvision, NumPy, Pillow,
+                      Matplotlib</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 🔄 3. System Workflow & Phases -->
+            <div class="glass-card">
+              <h3
+                style="font-size: 1.3rem; font-weight: 700; margin-bottom: 14px; border-bottom: 1px solid rgba(99, 102, 241, 0.2); padding-bottom: 8px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                🔄 3. System Workflow & Operational Phases
+              </h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div
+                  style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 10px; padding: 16px;">
+                  <span class="chip chip--purple" style="margin-bottom: 10px; display: inline-block;">Phase 1</span>
+                  <h4 style="color: var(--neon-purple); font-weight: 700; font-size: 1.1rem; margin-bottom: 6px;">
+                    Synthetic Inpainting & Controlled Benchmarking</h4>
+                  <ul style="margin-left: 18px; color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">
+                    <li><strong>Input:</strong> Clean, cloud-free satellite images
+                      (<code>cloud Free images/*.png</code>)</li>
+                    <li><strong>Mask Generation:</strong> Synthetic masks (Rectangle or Circle) at configurable
+                      coordinates (x_c, y_c) and sizes.</li>
+                    <li><strong>Purpose:</strong> Evaluates convergence speed, reconstruction accuracy (MSE, PSNR,
+                      SSIM), and loss behavior under controlled occlusions.</li>
+                  </ul>
+                </div>
+                <div
+                  style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 10px; padding: 16px;">
+                  <span class="chip chip--green" style="margin-bottom: 10px; display: inline-block;">Phase 2</span>
+                  <h4 style="color: #34D399; font-weight: 700; font-size: 1.1rem; margin-bottom: 6px;">Real Cloud
+                    Detection & Atmospheric Removal</h4>
+                  <ul style="margin-left: 18px; color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">
+                    <li><strong>Input:</strong> Paired cloudy satellite images (<code>cloud Images/*c.png</code>) &
+                      clear references.</li>
+                    <li><strong>Mask Generation:</strong> Automated cloud detection using 5-layer
+                      <code>SegmentationUNet</code> and physical attenuation maps.
+                    </li>
+                    <li><strong>Purpose:</strong> Removes actual atmospheric clouds and haze using physical transmission
+                      maps t(x).</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- 🧠 4. Deep Learning & Neural Architectures -->
+            <div class="glass-card">
+              <h3
+                style="font-size: 1.3rem; font-weight: 700; margin-bottom: 14px; border-bottom: 1px solid rgba(99, 102, 241, 0.2); padding-bottom: 8px; color: var(--neon-blue); display: flex; align-items: center; gap: 8px;">
+                🧠 4. Deep Learning & Neural Architectures
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 16px;">
+                <!-- DIP UNet -->
+                <div
+                  style="background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 16px;">
+                  <h4 style="color: #60A5FA; font-weight: 700; font-size: 1.05rem; margin-bottom: 6px;">A. High-Capacity
+                    DIP Network (<code>HighCapacityDIPUNet</code>)</h4>
+                  <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 8px;">
+                    Located in <a href="file:///d:/new%20pr%20pinn%20dip/models/dip.py"
+                      style="color: #38BDF8; text-decoration: underline;">models/dip.py</a>
+                  </p>
+                  <ul style="margin-left: 18px; color: var(--text-primary); font-size: 0.88rem; line-height: 1.6;">
+                    <li><strong>Architecture:</strong> 5-Level Encoder-Decoder CNN architecture.</li>
+                    <li><strong>Design Choice (<code>use_skip=False</code>):</strong> Skip connections are explicitly
+                      disabled for satellite inpainting to prevent high-frequency cloud noise from bypassing the
+                      bottleneck, forcing the network to smoothly propagate surrounding land statistics into the center
+                      of the mask.</li>
+                    <li><strong>Channels Progression:</strong> <code
+                        style="color: #F59E0B;">Input (32) → 64 → 128 → 256 → 512 → Bottleneck (512) → 256 → 128 → 64 → Output (3)</code>
+                    </li>
+                    <li><strong>Activation & Normalization:</strong> LeakyReLU (α = 0.2), BatchNorm2d, and final
+                      <code>Sigmoid()</code> activation to constrain reflectance to [0, 1].
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Segmentation UNet -->
+                <div
+                  style="background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 16px;">
+                  <h4 style="color: #C084FC; font-weight: 700; font-size: 1.05rem; margin-bottom: 6px;">B. Cloud
+                    Segmentation Network (<code>SegmentationUNet</code>)</h4>
+                  <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 8px;">
+                    Located in <a href="file:///d:/new%20pr%20pinn%20dip/models/segmenter.py"
+                      style="color: #C084FC; text-decoration: underline;">models/segmenter.py</a>
+                  </p>
+                  <ul style="margin-left: 18px; color: var(--text-primary); font-size: 0.88rem; line-height: 1.6;">
+                    <li><strong>Architecture:</strong> Lightweight 3-level U-Net mapping RGB images (B, 3, H, W) to
+                      probability mask (B, 1, H, W).</li>
+                    <li><strong>Real-time Training:</strong> Trained on-the-fly for 50 steps using binary cross-entropy
+                      loss against physical attenuation map:
+                      <div class="math-block"
+                        style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; color: #C084FC; margin: 6px 0; font-size: 0.9rem;">
+                        Attenuation(x, y) = max_{c ∈ {R,G,B}} | I_cloudy(x, y) - I_clear(x, y) |
+                      </div>
+                      Target mask M(x, y) = 1 where Attenuation > 0.22.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- 📐 5. Mathematical Pipeline & Loss Formulations -->
+            <div class="glass-card">
+              <h3
+                style="font-size: 1.3rem; font-weight: 700; margin-bottom: 14px; border-bottom: 1px solid rgba(99, 102, 241, 0.2); padding-bottom: 8px; color: var(--neon-purple); display: flex; align-items: center; gap: 8px;">
+                📐 5. Mathematical Pipeline & Loss Formulations
+              </h3>
+              <p style="margin-bottom: 12px;">During optimization, the total loss function <strong>L_total</strong> is
+                minimized:</p>
+
+              <div class="math-block"
+                style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(167, 139, 250, 0.3); padding: 14px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 1rem; text-align: center; margin: 12px 0; color: #A78BFA; font-weight: 600;">
+                L_total = L_{masked_recon} + λ_{TV} L_{TV} + λ_{ASM} L_{ASM} + λ_{PR} L_{PR} + λ_{DCP} L_{DCP}
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 16px 0;">
+                <div
+                  style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px; text-align: center;">
+                  <strong style="color: #60A5FA; font-size: 0.82rem; display: block;">L_{masked_recon}</strong>
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">Reconstruction MSE outside cloud</span>
+                </div>
+                <div
+                  style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px; text-align: center;">
+                  <strong style="color: #F472B6; font-size: 0.82rem; display: block;">L_{TV}</strong>
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">Symmetric TV boundary smoothness</span>
+                </div>
+                <div
+                  style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px; text-align: center;">
+                  <strong style="color: #38BDF8; font-size: 0.82rem; display: block;">L_{ASM}</strong>
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">Atmospheric Scattering Model</span>
+                </div>
+                <div
+                  style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px; text-align: center;">
+                  <strong style="color: #F59E0B; font-size: 0.82rem; display: block;">L_{DCP}</strong>
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">Dark Channel Prior</span>
+                </div>
+                <div
+                  style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px; text-align: center;">
+                  <strong style="color: #34D399; font-size: 0.82rem; display: block;">L_{PR}</strong>
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">Physical Range [0,1] Penalty</span>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+                <div
+                  style="background: rgba(0,0,0,0.2); border-left: 3px solid #60A5FA; padding: 10px 14px; border-radius: 4px;">
+                  <strong style="color: #60A5FA;">1. Masked Reconstruction Loss (L_{masked_recon}):</strong>
+                  <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Evaluates pixel fidelity
+                    strictly outside the cloud region (1 - M):
+                    <code>L_{masked_recon} = (1/N) ∑ || (I_pred - I_input) ⊙ (1 - M) ||²</code>
+                  </p>
+                </div>
+                <div
+                  style="background: rgba(0,0,0,0.2); border-left: 3px solid #F472B6; padding: 10px 14px; border-radius: 4px;">
+                  <strong style="color: #F472B6;">2. Symmetric Total Variation Loss (L_{TV}):</strong>
+                  <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Enforces spatial smoothness
+                    along pixel boundaries:
+                    <code>L_{TV} = mean( |∇_y I_pred| ⊙ M_y ) + mean( |∇_x I_pred| ⊙ M_x )</code>
+                  </p>
+                </div>
+                <div
+                  style="background: rgba(0,0,0,0.2); border-left: 3px solid #38BDF8; padding: 10px 14px; border-radius: 4px;">
+                  <strong style="color: #38BDF8;">3. Atmospheric Scattering Model Loss (L_{ASM}):</strong>
+                  <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Based on Koschmieder
+                    atmospheric model: <code>I(x) = J(x)·t(x) + A·(1 - t(x))</code>, giving
+                    <code>L_{ASM} = || I_cloudy - (J·t + A(1-t)) ||²</code>
+                  </p>
+                </div>
+                <div
+                  style="background: rgba(0,0,0,0.2); border-left: 3px solid #F59E0B; padding: 10px 14px; border-radius: 4px;">
+                  <strong style="color: #F59E0B;">4. Dark Channel Prior Loss (L_{DCP}):</strong>
+                  <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Leverages the statistical
+                    observation that natural scenes have dark pixels near zero in at least one color channel:
+                    <code>J^{dark}(x) = min_{c} ( min_{y ∈ Ω(x)} J^c(y) )</code>
+                  </p>
+                </div>
+                <div
+                  style="background: rgba(0,0,0,0.2); border-left: 3px solid #34D399; padding: 10px 14px; border-radius: 4px;">
+                  <strong style="color: #34D399;">5. Physical Range Penalty (L_{PR}):</strong>
+                  <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Penalizes non-physical
+                    reflectance values outside [0, 1]:
+                    <code>L_{PR} = mean( max(0, -I_pred)² ) + mean( max(0, I_pred - 1)² )</code>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 📊 6. Execution Flow & WebSocket Communication -->
+            <div class="glass-card">
+              <h3
+                style="font-size: 1.3rem; font-weight: 700; margin-bottom: 14px; border-bottom: 1px solid rgba(99, 102, 241, 0.2); padding-bottom: 8px; color: var(--neon-blue); display: flex; align-items: center; gap: 8px;">
+                📊 6. Execution Flow & WebSocket Telemetry
+              </h3>
+              <div
+                style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 18px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #34D399; line-height: 1.5; overflow-x: auto; white-space: pre;">
+                [User Clicks "Remove Clouds"]
+                |
+                v
+                POST /api/start (HTTP) ──> Creates TrainingRunner Thread
+                |
+                +──> Optimization Loop (5000 Iterations)
+                | |
+                | v
+                | Computes DIP Forward & PINN Losses
+                | |
+                | v
+                | Optimizer.step() (Adam, lr=0.005)
+                | |
+                +<---------+ Every 10 Iterations | v WebSocket JSON Broadcast { iteration, loss, psnr, ssim,
+                  current_image_base64, heatmap_base64 } | v React State Update & Re-render Canvas</div>
+              </div>
+
+              <!-- 📁 7. Directory Structure Summary -->
+              <div class="glass-card">
+                <h3
+                  style="font-size: 1.3rem; font-weight: 700; margin-bottom: 14px; border-bottom: 1px solid rgba(99, 102, 241, 0.2); padding-bottom: 8px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                  📁 7. Directory Structure Summary
+                </h3>
+                <div
+                  style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 18px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #F59E0B; line-height: 1.6; overflow-x: auto; white-space: pre;">
+                  d:/new pr pinn dip/
+                  │
+                  ├── backend/
+                  │ ├── main.py # FastAPI endpoints & WebSocket broadcaster
+                  │ └── training.py # TrainingRunner thread & PyTorch loop
+                  │
+                  ├── models/
+                  │ ├── dip.py # HighCapacityDIPUNet (Encoder-Decoder)
+                  │ ├── segmenter.py # SegmentationUNet (Real-time cloud detector)
+                  │ ├── pinn.py # Atmospheric Scattering Model (ASM)
+                  │ └── losses.py # TV, DCP, SCC, and Physical Range losses
+                  │
+                  ├── cloud Free images/ # Phase 1 & 2 clean reference images
+                  ├── cloud Images/ # Phase 2 cloudy images
+                  └── frontend/ # Vite + React dashboard UI</div>
+              </div>
+
+            </div>
+          </div>

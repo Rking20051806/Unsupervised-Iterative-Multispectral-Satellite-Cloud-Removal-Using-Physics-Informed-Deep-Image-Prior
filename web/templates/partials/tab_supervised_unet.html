@@ -1,0 +1,151 @@
+<div class="tab-panel" id="tab-supervised-unet">
+          <div class="pipeline-header">
+            <div class="pipeline-title-group">
+              <h3>🧬 Supervised U-Net Cloud Removal</h3>
+              <p>Instant feed-forward reconstruction trained with paired data (0.7×MSE + 0.3×L1 loss) as documented in
+                the ISRO report.</p>
+            </div>
+            <div class="status-pill" id="su-status-pill">Ready</div>
+          </div>
+
+          
+                  
+                  <div class="s2-workspace-layout" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;">
+            <!-- Left Column: Image Panels -->
+            <div class="s2-workspace-left">
+              <!-- 4-Panel Grid -->
+              <div class="img-grid img-grid--2" style="margin-bottom: 20px;">
+                <div class="img-card">
+                  <div class="img-card__head">
+                    <h3>Cloudy Input</h3>
+                    <span class="chip chip--blue">RICE-II</span>
+                  </div>
+                  <div class="img-card__body" style="height:256px;">
+                    <img id="su-img-cloudy" alt="Cloudy Input" />
+                    <div class="img-placeholder" id="ph-su-cloudy">Load sample to preview</div>
+                  </div>
+                </div>
+                <div class="img-card">
+                  <div class="img-card__head">
+                    <h3>Binary Cloud Mask</h3>
+                    <span class="chip chip--purple">U-Net Segment</span>
+                  </div>
+                  <div class="img-card__body" style="height:256px;">
+                    <img id="su-img-mask" alt="Cloud Mask" />
+                    <div class="img-placeholder" id="ph-su-mask">Awaiting mask</div>
+                  </div>
+                </div>
+                <div class="img-card">
+                  <div class="img-card__head">
+                    <h3>Ground Truth Label</h3>
+                    <span class="chip chip--green">Reference</span>
+                  </div>
+                  <div class="img-card__body" style="height:256px;">
+                    <img id="su-img-label" alt="Ground Truth" />
+                    <div class="img-placeholder" id="ph-su-label">No reference</div>
+                  </div>
+                </div>
+                <div class="img-card">
+                  <div class="img-card__head">
+                    <h3>Supervised Output</h3>
+                    <span class="chip chip--green">Restored</span>
+                  </div>
+                  <div class="img-card__body" style="height:256px;">
+                    <img id="su-img-predicted" alt="Supervised Output" />
+                    <div class="img-placeholder" id="ph-su-predicted">Run inference to see result</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Before/After slider -->
+              <div class="compare-wrapper" id="su-compare-wrapper" style="display:none;">
+                <h3 style="margin: 0 0 10px; font-size: 1rem;">Before / After Slider</h3>
+                <div class="split-slider" id="su-split-slider" style="height:350px;">
+                  <div class="split-slider__before"><img id="su-before" alt="Cloudy" /></div>
+                  <div class="split-slider__after" id="su-split-after"><img id="su-after" alt="Restored" /></div>
+                  <div class="split-slider__bar" id="su-split-bar">
+                    <div class="split-slider__handle">↔</div>
+                  </div>
+                </div>
+                <p class="text-muted" style="font-size:0.85rem;margin-top:8px;">Drag the divider to compare Cloudy ↔
+                  Supervised Restored</p>
+              </div>
+            </div>
+
+            <!-- Right Column: Control Panel & Metrics -->
+            <div class="s2-workspace-right">
+              <div class="glass-card">
+                <h3
+                  style="font-size: 1.1rem; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                  🎛️ Control Panel</h3>
+
+                <div class="sidebar__section" style="padding:0; margin-bottom:15px;">
+                  <label class="field-label" for="su-sample-num">Select RICE2 Sample Index</label>
+                  <div style="display:flex; gap:10px; align-items:center;">
+                    <input type="number" id="su-sample-num" class="glass-input" value="0" min="0" max="735"
+                      style="width:90px;" />
+                    <span class="text-muted" id="su-sample-max">/ 735</span>
+                    <button class="btn btn--secondary btn--small" id="su-prev-btn" style="padding:6px 10px;">◀</button>
+                    <button class="btn btn--secondary btn--small" id="su-next-btn" style="padding:6px 10px;">▶</button>
+                    <button class="btn btn--secondary btn--small" id="su-random-btn"
+                      style="padding:6px 12px; font-size:0.8rem;">🎲 Random</button>
+                  </div>
+                </div>
+
+                <div class="sidebar__section" style="padding:0; margin-bottom:20px;">
+                  <span id="su-sample-info" class="badge"
+                    style="font-size:0.85rem; padding:6px 12px; display:inline-block; margin-bottom:10px;">Sample Name:
+                    —</span>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom:20px;">
+                  <button class="btn btn--primary" id="su-run-btn" style="flex:1;">⚡ Run Instant Inference</button>
+                </div>
+              </div>
+
+              <div class="glass-card" style="margin-top:20px;">
+                <h3
+                  style="font-size: 1.1rem; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                  📊 Quantitative Metrics</h3>
+                <div class="s2-metrics-grid" style="grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div class="metric-card metric-card--psnr" title="What: Peak Signal-to-Noise Ratio.&#10;Why: Measures pixel-level fidelity vs ground truth.&#10;Range: 0 to ∞ (Higher is better, >30 dB is excellent)." style="cursor:help;">
+                    <div class="metric-card__icon">📡</div>
+                    <span class="metric-card__label">PSNR ℹ️</span>
+                    <strong class="metric-card__value" id="su-metric-psnr">—</strong>
+                    <p class="metric-card__desc">vs. label in dB</p>
+                  </div>
+                  <div class="metric-card metric-card--ssim" title="What: Structural Similarity Index.&#10;Why: Measures structural preservation (edges, shapes) which aligns better with human perception.&#10;Range: 0 to 1 (Closer to 1 is better)." style="cursor:help;">
+                    <div class="metric-card__icon">🔍</div>
+                    <span class="metric-card__label">SSIM ℹ️</span>
+                    <strong class="metric-card__value" id="su-metric-ssim">—</strong>
+                    <p class="metric-card__desc">Structural similarity</p>
+                  </div>
+                  <div class="metric-card metric-card--prs-asm">
+                    <div class="metric-card__icon">📉</div>
+                    <span class="metric-card__label">MSE / L1 Loss</span>
+                    <strong class="metric-card__value" id="su-metric-loss" style="font-size:1.1rem;">—</strong>
+                    <p class="metric-card__desc">Pixel-wise absolute/squared error</p>
+                  </div>
+                  <div class="metric-card metric-card--prs">
+                    <div class="metric-card__icon">⏱️</div>
+                    <span class="metric-card__label">Runtime</span>
+                    <strong class="metric-card__value" id="su-metric-time">—</strong>
+                    <p class="metric-card__desc">Inference execution time</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="glass-card" style="margin-top:20px;">
+                <h3 style="font-size: 1.1rem; margin-bottom: 10px; color: var(--neon-cyan);">ℹ️ Model Details</h3>
+                <ul style="margin-left: 20px; line-height: 1.6; font-size: 0.85rem; color: var(--text-secondary);">
+                  <li><strong>Inputs</strong>: 4 channels (Red, Green, Blue, Cloud Mask).</li>
+                  <li><strong>Outputs</strong>: 3 channels (Red, Green, Blue restored).</li>
+                  <li><strong>Loss Function</strong>: L<sub>total</sub> = 0.7 × MSE + 0.3 × L<sub>1</sub>.</li>
+                  <li><strong>Optimizer</strong>: Adam (learning rate 10<sup>-4</sup>).</li>
+                  <li><strong>Backbone</strong>: Fully self-trained U-Net (31.04M params) with zero pre-training to
+                    preserve spectral fidelity.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>

@@ -1,0 +1,65 @@
+<div class="tab-panel tab-panel--active" id="tab-detection">
+          <div class="img-grid img-grid--3" style="margin-bottom: 20px;">
+            <div class="img-card">
+              <div class="img-card__head">
+                <h3>Original Cloudy</h3><span class="chip chip--blue">Input</span>
+              </div>
+              <div class="img-card__body">
+                <img id="input-image" alt="Original cloudy satellite image" />
+                <div class="img-placeholder" id="ph-input">Select a sample →</div>
+              </div>
+            </div>
+            <div class="img-card">
+              <div class="img-card__head">
+                <h3>Detected Cloud Mask</h3><span class="chip chip--purple">Prediction</span>
+              </div>
+              <div class="img-card__body">
+                <img id="mask-image" alt="Detected cloud mask" />
+                <div class="img-placeholder" id="ph-mask">Awaiting detection</div>
+              </div>
+            </div>
+            <div class="img-card">
+              <div class="img-card__head">
+                <h3>Cloud Overlay</h3><span class="chip chip--default">Preview</span>
+              </div>
+              <div class="img-card__body">
+                <img id="overlay-image" alt="Cloud overlay" />
+                <div class="img-placeholder" id="ph-overlay">Awaiting detection</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="img-grid img-grid--2">
+            <div class="img-card">
+              <div class="img-card__head">
+                <h3>Ground Truth (Reference)</h3><span class="chip chip--green">Label</span>
+              </div>
+              <div class="img-card__body">
+                <img id="label-image" alt="Reference clear image" />
+                <div class="img-placeholder" id="ph-label">No reference available</div>
+              </div>
+            </div>
+            <div class="img-card">
+              <div class="img-card__head">
+                <h3>DIP+PINN Output</h3><span class="chip chip--green">Result</span>
+              </div>
+              <div class="img-card__body">
+                <img id="removed-image" alt="Cloud removed output" />
+                <div class="img-placeholder" id="ph-removed">Run analysis to see result</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Comparison slider -->
+          <div class="compare-wrapper" id="rice-compare-wrapper" style="display:none; margin-top: 20px;">
+            <h3 style="margin: 18px 0 10px; font-size: 1rem;">Before / After Comparison</h3>
+            <div class="split-slider" id="rice-split-slider">
+              <div class="split-slider__before"><img id="rice-before" alt="Cloudy" /></div>
+              <div class="split-slider__after" id="rice-split-after"><img id="rice-after" alt="Restored" /></div>
+              <div class="split-slider__bar" id="rice-split-bar">
+                <div class="split-slider__handle">↔</div>
+              </div>
+            </div>
+            <p class="text-muted" style="font-size:0.85rem;margin-top:8px;">Drag the divider to compare Cloudy ↔ Restored</p>
+          </div>
+        </div>

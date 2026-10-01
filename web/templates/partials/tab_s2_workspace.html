@@ -1,0 +1,920 @@
+<div class="tab-panel" id="tab-s2-workspace">
+            <div class="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-6 items-start">
+              <!-- Left Column: Map + Controls -->
+              <div class="flex flex-col gap-6">
+                  <!-- Map Selection Tabs -->
+                  <style>
+                    .s2-sub-tab-btn {
+                      padding: 8px 16px;
+                      border-radius: 8px;
+                      font-size: 12px;
+                      font-weight: bold;
+                      color: #64748b; /* slate-500 */
+                      background: transparent;
+                      border: 1px solid transparent;
+                      cursor: pointer;
+                      transition: all 0.2s;
+                    }
+                    .s2-sub-tab-btn:hover {
+                      background: rgba(0,0,0,0.05);
+                      color: #334155; /* slate-700 */
+                    }
+                    .s2-sub-tab-btn.tab-btn--active {
+                      background: white;
+                      color: #0f172a; /* slate-900 */
+                      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                      border: 1px solid #e2e8f0;
+                    }
+                    /* Dark mode overrides (assuming .dark class on html/body) */
+                    .dark .s2-sub-tab-btn { color: #94a3b8; }
+                    .dark .s2-sub-tab-btn:hover { background: rgba(255,255,255,0.05); color: #e2e8f0; }
+                    .dark .s2-sub-tab-btn.tab-btn--active {
+                      background: #1e293b;
+                      color: #f8fafc;
+                      border-color: rgba(255,255,255,0.1);
+                    }
+                  </style>
+                  <div class="s2-map-tabs" style="display: flex; gap: 8px; margin-bottom: 0px; padding: 6px; background: rgba(0,0,0,0.02); border-radius: 12px; border: 1px solid rgba(0,0,0,0.05);">
+                    <button class="s2-sub-tab-btn tab-btn--active" data-s2-map="Vidarbha_Nagpur_Maharashtra.SAFE">Nagpur, Maharashtra</button>
+                    <button class="s2-sub-tab-btn" data-s2-map="Vidarbha_Yavatmal_Maharashtra.SAFE">Yavatmal, Maharashtra</button>
+                    <button class="s2-sub-tab-btn" data-s2-map="China.SAFE">China (Custom COG)</button>
+                    <button class="s2-sub-tab-btn" data-s2-map="Chandigarh_Punjab_Haryana.SAFE">Chandigarh free</button>
+                  </div>
+                <!-- Map Viewer -->
+                <div class="bg-white/40 dark:bg-brand-darksurface/40 border border-black/5 dark:border-white/5 rounded-premium p-5 flex flex-col gap-4">
+                  <div class="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2 mb-1">
+                    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><i data-lucide="map" class="w-4 h-4"></i> Sentinel-2 Tile Overview</h3>
+                    <div class="flex gap-2 items-center">
+                      <span class="text-[10px] font-bold tracking-wider px-2 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/15 rounded-md uppercase" id="s2-overview-badge">TCI + Cloud Mask</span>
+                      <button class="px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-black/5 dark:border-white/10 text-xs font-bold rounded-lg transition-colors text-slate-600 dark:text-slate-400" id="s2-load-full-btn">Load 1024px</button>
+                    </div>
+                  </div>
+
+                  <!-- Map frame -->
+                  <div class="s2-map-wrapper relative h-[380px] w-full rounded-xl overflow-hidden shadow-inner">
+                    <div id="s2-map" class="absolute inset-0 w-full h-full z-10"></div>
+                    <button id="s2-map-fullscreen-btn" class="px-3 py-1.5 bg-brand-darksurface/90 hover:bg-black border border-white/10 text-[10px] font-bold rounded-lg absolute top-2.5 left-[50px] z-30 transition-all flex items-center gap-1 shadow-md text-slate-200">
+                      🖥️ Full Screen
+                    </button>
+                    
+                    <div class="s2-map-spinner absolute inset-0 z-20 flex flex-col items-center justify-center bg-brand-darkbg/85 gap-3" id="s2-map-spinner">
+                      <div class="w-8 h-8 border-4 border-teal-500/20 border-t-teal-500 rounded-full animate-spin"></div>
+                      <span class="text-xs font-semibold text-slate-400">Loading Sentinel-2 tile…</span>
+                    </div>
+                  </div>
+
+                  <!-- Map Footer -->
+                  <div class="flex items-center justify-between text-xs font-semibold mt-1">
+                    <span class="text-slate-500 dark:text-slate-400 flex items-center gap-1" id="s2-coords-readout"><i data-lucide="info" class="w-3.5 h-3.5"></i> Click map to crop 256×256 area</span>
+                    <button class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-black/5 dark:border-white/10 rounded-lg text-xs font-bold transition-colors text-slate-600 dark:text-slate-400" id="s2-toggle-mask-btn">Show Mask</button>
+                  </div>
+                </div>
+
+                <!-- Tile Metadata & Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <!-- Metadata -->
+                  <div class="bg-white/40 dark:bg-brand-darksurface/40 border border-black/5 dark:border-white/5 rounded-premium p-4 flex flex-col gap-4">
+                    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><i data-lucide="database" class="w-4 h-4"></i> Tile Metadata</h3>
+                    <div class="grid grid-cols-2 gap-y-3 font-semibold text-xs">
+                      <span class="text-slate-400">Tile Size</span><span id="tm-size">—</span>
+                      <span class="text-slate-400">CRS</span><span id="tm-crs">—</span>
+                      <span class="text-slate-400">Pixel Size</span><span id="tm-pxsize">—</span>
+                      <span class="text-slate-400">Active Bands</span><span>B02 B03 B04 B08</span>
+                    </div>
+                  </div>
+
+                  <!-- Cloud Detection Stats -->
+                  <div class="bg-white/40 dark:bg-brand-darksurface/40 border border-black/5 dark:border-white/5 rounded-premium p-4 flex flex-col gap-4">
+                    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><i data-lucide="bar-chart" class="w-4 h-4"></i> Cloud Detection Stats</h3>
+                    <div class="flex flex-col gap-2">
+                      <div class="flex flex-col">
+                        <div class="flex justify-between text-xs font-semibold mb-1"><span class="text-slate-500">Total Cloud Area</span><strong id="s2-stat-total" class="text-teal-400 font-bold">0.0%</strong></div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-800 h-1 rounded-full overflow-hidden"><div class="bg-teal-400 h-full w-0 transition-all duration-300" id="s2-bar-total"></div></div>
+                      </div>
+                      <div class="flex flex-col">
+                        <div class="flex justify-between text-xs font-semibold mb-1"><span class="text-slate-500">Thick Opaque Cloud</span><strong id="s2-stat-thick" class="text-red-400 font-bold">0.0%</strong></div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-800 h-1 rounded-full overflow-hidden"><div class="bg-red-400 h-full w-0 transition-all duration-300" id="s2-bar-thick"></div></div>
+                      </div>
+                      <div class="flex flex-col">
+                        <div class="flex justify-between text-xs font-semibold mb-1"><span class="text-slate-500">Medium Altocumulus</span><strong id="s2-stat-medium" class="text-amber-400 font-bold">0.0%</strong></div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-800 h-1 rounded-full overflow-hidden"><div class="bg-amber-400 h-full w-0 transition-all duration-300" id="s2-bar-medium"></div></div>
+                      </div>
+                      <div class="flex flex-col">
+                        <div class="flex justify-between text-xs font-semibold mb-1"><span class="text-slate-500">Thin Cirrus / Haze</span><strong id="s2-stat-thin" class="text-purple-400 font-bold">0.0%</strong></div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-800 h-1 rounded-full overflow-hidden"><div class="bg-purple-400 h-full w-0 transition-all duration-300" id="s2-bar-thin"></div></div>
+                      </div>
+                      <div class="flex flex-col">
+                        <div class="flex justify-between text-xs font-semibold mb-1"><span class="text-slate-500">Cloud Shadows</span><strong id="s2-stat-shadow" class="text-slate-400 font-bold">0.0%</strong></div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-800 h-1 rounded-full overflow-hidden"><div class="bg-slate-400 h-full w-0 transition-all duration-300" id="s2-bar-shadow"></div></div>
+                      </div>
+                      <div class="border-t border-slate-100 dark:border-white/5 pt-2 mt-1">
+                        <div class="flex justify-between text-xs font-semibold"><span class="text-slate-400">U-Net Segmenter Confidence</span><strong id="s2-stat-confidence" class="text-emerald-400 font-bold">0.0%</strong></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Cloud Detection & Removal Results -->
+                <div class="bg-white/40 dark:bg-brand-darksurface/40 border border-black/5 dark:border-white/5 rounded-premium p-5">
+                  <div class="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3">
+                    <h3 class="text-lg font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5 mx-auto">Cloud Detection & Removal Results</h3>
+                  </div>
+
+                  <!-- 5-Panel Grid Layout -->
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4" id="s2-5panel-view">
+                    
+                    <!-- Top Row -->
+                    <div class="flex flex-col items-center">
+                      <span class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">1. Cloudy Input (RGB)</span>
+                      <div class="relative bg-slate-900 border border-black/10 dark:border-white/5 rounded-premium aspect-square w-full flex items-center justify-center overflow-hidden">
+                        <img id="s2-comparator-cloudy" class="w-full h-full object-cover hidden" alt="Cloudy Input" />
+                        <div class="text-xs text-slate-500 animate-pulse" id="ph-s2-comp-cloudy">Awaiting input...</div>
+                      </div>
+                    </div>
+                    
+                    <div class="flex flex-col items-center">
+                      <span class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">2. Cloud Mask (Binary)</span>
+                      <div class="relative bg-slate-900 border border-black/10 dark:border-white/5 rounded-premium aspect-square w-full flex items-center justify-center overflow-hidden">
+                        <img id="s2-comparator-mask" class="w-full h-full object-cover hidden" style="display: none;" alt="Detected Cloud Mask" />
+                        <div class="text-xs text-slate-500 animate-pulse" id="ph-s2-comp-mask">Awaiting mask...</div>
+                      </div>
+                    </div>
+
+                    <div class="flex flex-col items-center">
+                      <span class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">3. Cloud Mask (Overlay)</span>
+                      <div class="relative bg-slate-900 border border-black/10 dark:border-white/5 rounded-premium aspect-square w-full flex items-center justify-center overflow-hidden">
+                        <img id="s2-comparator-overlay" class="w-full h-full object-cover hidden" style="display: none;" alt="Cloud Mask Overlay" />
+                        <div class="text-xs text-slate-500 animate-pulse" id="ph-s2-comp-overlay">Awaiting overlay...</div>
+                      </div>
+                    </div>
+
+                    <!-- Bottom Row -->
+                    <div class="flex flex-col items-center">
+                      <span class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">4. Cloud Free Output (RGB)</span>
+                      <div class="relative bg-slate-900 border border-black/10 dark:border-white/5 rounded-premium aspect-square w-full flex items-center justify-center overflow-hidden">
+                        <img id="s2-comparator-restored" class="w-full h-full object-cover hidden" alt="Restored Image" />
+                        <div class="text-xs text-slate-500 animate-pulse" id="ph-s2-comp-restored">Awaiting restoration...</div>
+                      </div>
+                    </div>
+
+                    <div class="flex flex-col items-center">
+                      <span class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">5. Enhanced View (Zoomed)</span>
+                      <div class="relative bg-slate-900 border border-black/10 dark:border-white/5 rounded-premium aspect-square w-full flex items-center justify-center overflow-hidden">
+                        <img id="s2-comparator-zoomed" class="w-full h-full object-cover hidden" style="transform: scale(2.0); transform-origin: center center;" alt="Enhanced Zoom View" />
+                        <div class="text-xs text-slate-500 animate-pulse" id="ph-s2-comp-zoomed">Awaiting zoom...</div>
+                      </div>
+                    </div>
+
+                    <!-- Side Panels (Legend & Coverage) -->
+                    <div class="flex flex-col gap-4">
+                      <!-- Legend Panel -->
+                      <div class="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-xl p-4 flex flex-col justify-center">
+                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Legend (Mask)</h4>
+                        <div class="flex flex-col gap-3">
+                          <div class="flex items-center gap-3">
+                            <div class="w-6 h-6 bg-white border border-slate-300 rounded-sm shadow-sm"></div>
+                            <span class="text-sm font-semibold text-slate-600 dark:text-slate-300">Cloud (1)</span>
+                          </div>
+                          <div class="flex items-center gap-3">
+                            <div class="w-6 h-6 bg-black border border-slate-700 rounded-sm shadow-sm"></div>
+                            <span class="text-sm font-semibold text-slate-600 dark:text-slate-300">No Cloud (0)</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Cloud Coverage Panel -->
+                      <div class="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-xl p-4 flex flex-col justify-center flex-1">
+                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Cloud Coverage</h4>
+                        <div class="flex flex-col gap-2 font-mono text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                          <div class="flex justify-between items-center">
+                            <span>Cloudy Pixels <span class="mx-1">:</span></span>
+                            <span id="s2-panel-cloudy-pct">0.00%</span>
+                          </div>
+                          <div class="flex justify-between items-center">
+                            <span>Clear Pixels <span class="mx-1">:</span></span>
+                            <span id="s2-panel-clear-pct">100.00%</span>
+                          </div>
+                          <div class="flex justify-between items-center border-t border-slate-300 dark:border-slate-700 pt-2 mt-1">
+                            <span>Total Pixels <span class="mx-1">:</span></span>
+                            <span>100%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- XAI Heatmap & Attribution -->
+                <div class="bg-white/40 dark:bg-brand-darksurface/40 border border-black/5 dark:border-white/5 rounded-premium p-5 flex flex-col gap-4">
+                  <div class="flex justify-between items-center border-b border-black/5 dark:border-white/5 pb-2">
+                    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><i data-lucide="eye" class="w-4 h-4"></i> Pixel Attribution Heatmap & Scores</h3>
+                    <span class="text-[10px] font-bold tracking-wider px-2 py-0.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/15 rounded-md uppercase">Integrated Gradients</span>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-6 items-center">
+                    <div class="flex flex-col gap-3">
+                      <div class="relative bg-slate-900 border border-black/10 dark:border-white/5 rounded-premium h-[140px] overflow-hidden flex items-center justify-center">
+                        <img id="s2-xai-heatmap" alt="Attribution Heatmap" class="w-full h-full object-contain hidden" />
+                        <div class="text-xs text-slate-500 text-center animate-pulse" id="ph-s2-heatmap">Run pipeline to see pixel attribution</div>
+                      </div>
+                      <div class="grid grid-cols-4 gap-1">
+                        <button class="px-1.5 py-1.5 text-[9px] font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg border border-black/5 dark:border-white/10 transition-colors" id="s2-xai-pill-original">Input</button>
+                        <button class="px-1.5 py-1.5 text-[9px] font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg border border-black/5 dark:border-white/10 transition-colors" id="s2-xai-pill-gradcam">Grad</button>
+                        <button class="px-1.5 py-1.5 text-[9px] font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg border border-black/5 dark:border-white/10 transition-colors" id="s2-xai-pill-integrated">IntGrad</button>
+                        <button class="px-1.5 py-1.5 text-[9px] font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg border border-black/5 dark:border-white/10 transition-colors" id="s2-xai-pill-overlay">Overlay</button>
+                      </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3 font-semibold text-xs">
+                      <h4 class="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Top Region Attributions</h4>
+                      <div class="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-black/5 dark:border-white/5">
+                        <span class="text-slate-400">Dense Cloud</span><strong id="s2-attr-dense">—</strong>
+                      </div>
+                      <div class="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-black/5 dark:border-white/5">
+                        <span class="text-slate-400">Cloud Edge</span><strong id="s2-attr-edge">—</strong>
+                      </div>
+                      <div class="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-black/5 dark:border-white/5">
+                        <span class="text-slate-400">Vegetation</span><strong id="s2-attr-veg">—</strong>
+                      </div>
+                      <div class="flex justify-between p-2.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-black/5 dark:border-white/5">
+                        <span class="text-slate-400">Water bodies</span><strong id="s2-attr-water">—</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Live curves charts -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="bg-white/40 dark:bg-brand-darksurface/40 border border-black/5 dark:border-white/5 rounded-premium p-4">
+                    <div class="flex justify-between items-center border-b border-black/5 dark:border-white/5 pb-2 mb-3">
+                      <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300">Live Loss Convergence</h3>
+                      <span class="text-[10px] font-black px-2 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/15 rounded-md" id="s2-chart-step">Step —</span>
+                    </div>
+                    <div class="h-[180px] w-full">
+                      <canvas id="s2-losses-chart"></canvas>
+                    </div>
+                  </div>
+                  
+                  <div class="bg-white/40 dark:bg-brand-darksurface/40 border border-black/5 dark:border-white/5 rounded-premium p-4">
+                    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 border-b border-black/5 dark:border-white/5 pb-2 mb-3">Live Input Consistency (PSNR & SSIM)</h3>
+                    <div class="h-[180px] w-full">
+                      <canvas id="s2-quality-chart"></canvas>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Spectral Reflectance profile chart -->
+                <div class="bg-white/40 dark:bg-brand-darksurface/40 border border-black/5 dark:border-white/5 rounded-premium p-5" id="s2-spectral-card">
+                  <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><i data-lucide="activity" class="w-4 h-4"></i> Spectral Reflectance Profile</h3>
+                  <div class="h-[180px] w-full mt-4">
+                    <canvas id="s2-spectral-chart"></canvas>
+                  </div>
+                </div>
+
+                <!-- Bottom stage tracker -->
+                <div class="stage-tracker-bar">
+                  <div class="stage-bubble stage-bubble--active" id="s2-sb-input">Input</div>
+                  <div class="stage-bubble" id="s2-sb-unet">U-Net</div>
+                  <div class="stage-bubble" id="s2-sb-mask">Cloud Mask</div>
+                  <div class="stage-bubble" id="s2-sb-dip">DIP Prior</div>
+                  <div class="stage-bubble" id="s2-sb-asm">ASM Model</div>
+                  <div class="stage-bubble" id="s2-sb-rte">RTE Loss</div>
+                  <div class="stage-bubble" id="s2-sb-pinn">PINN Opt</div>
+                  <div class="stage-bubble" id="s2-sb-restored">Restored</div>
+                  <div class="stage-bubble" id="s2-sb-captum">Captum Map</div>
+                  <div class="stage-bubble" id="s2-sb-metrics">Metrics</div>
+                </div>
+              </div>
+
+              <!-- Right Column: Settings Dashboard & Diagnostics (Narrow) -->
+              <div class="flex flex-col gap-6">
+                <!-- Optimization Settings -->
+                <div class="bg-white/40 dark:bg-brand-darksurface/40 border border-black/5 dark:border-white/5 rounded-premium p-5 flex flex-col gap-5">
+                  <div class="border-b border-black/5 dark:border-white/5 pb-2 mb-1">
+                    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><i data-lucide="sliders" class="w-4 h-4"></i> Optimization Settings</h3>
+                  </div>
+
+                  <div class="flex flex-wrap gap-4 items-end border-b border-dashed border-slate-200 dark:border-white/10 pb-4 mb-1">
+                    <div class="flex-1 min-width-[180px]">
+                      <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-2">UTM Bounds Latitude & Longitude</label>
+                      <div class="flex gap-2">
+                        <input type="number" id="s2-input-lat" class="w-1/2 px-2 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-semibold text-center outline-none" value="37.44" step="0.01" placeholder="Lat" />
+                        <input type="number" id="s2-input-lng" class="w-1/2 px-2 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-semibold text-center outline-none" value="76.75" step="0.01" placeholder="Lng" />
+                      </div>
+                    </div>
+                    <div class="flex gap-2 w-full">
+                      <button class="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-black/5 dark:border-white/10 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center justify-center gap-1 flex-1 transition-colors" id="s2-load-coords-btn">🗺️ Load Coords</button>
+                      <button class="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-black/5 dark:border-white/10 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center justify-center gap-1 flex-1 transition-colors" id="s2-random-crop-btn">🎲 Random Crop</button>
+                    </div>
+                  </div>
+
+                  <!-- Synthetic Cloud Controls -->
+                  <div class="flex items-center justify-between border-b border-dashed border-slate-200 dark:border-white/10 pb-4 mb-2" id="synthetic-cloud-controls">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" id="s2-enable-clouds" class="w-4 h-4 rounded text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                      <span class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Enable Cloud Mask</span>
+                    </label>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[10px] font-bold text-slate-400 uppercase">Target %:</span>
+                      <input type="number" id="s2-input-cloud-pct" class="w-14 px-1 py-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded text-xs font-semibold text-center outline-none" value="20" min="1" max="35" placeholder="%" />
+                      <button id="s2-random-cloud-btn" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-black/5 dark:border-white/10 rounded text-xs transition-colors" title="Random Cloud">🎲</button>
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col gap-4">
+                    <div>
+                      <div class="flex justify-between items-center mb-2">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Optimization Iterations</label>
+                        <label class="flex items-center gap-1.5 cursor-pointer text-[10px] font-bold text-slate-500">
+                          <input type="checkbox" id="s2-iters-custom-check" class="rounded border-slate-300 text-teal-500 shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200 focus:ring-opacity-50">
+                          Custom
+                        </label>
+                      </div>
+                      <div class="flex items-center gap-2 mb-2">
+                        <input type="number" id="s2-iters-input" class="flex-1 px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded text-xs font-bold text-right outline-none disabled:opacity-50" value="2000" min="100" max="10000" step="100" disabled />
+                        <button id="s2-iters-save" class="px-3 py-1.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-600 dark:text-teal-400 border border-teal-500/20 rounded text-[10px] font-bold transition-all disabled:opacity-50">Save</button>
+                      </div>
+                      <div class="grid grid-cols-4 gap-1" role="group" id="s2-iters-presets">
+                        <button class="s2-iters-btn px-2 py-1.5 bg-slate-50 border border-black/5 dark:bg-slate-900 dark:border-white/10 rounded text-[9px] font-bold text-slate-500 transition-all text-center disabled:opacity-50" data-iters="600" id="s2-iters-fast">
+                          600
+                        </button>
+                        <button class="s2-iters-btn s2-iters-btn--active px-2 py-1.5 bg-slate-50 border border-black/5 dark:bg-slate-900 dark:border-white/10 rounded text-[9px] font-bold text-slate-500 transition-all text-center disabled:opacity-50" data-iters="2000" id="s2-iters-hq">
+                          2000
+                        </button>
+                        <button class="s2-iters-btn px-2 py-1.5 bg-slate-50 border border-black/5 dark:bg-slate-900 dark:border-white/10 rounded text-[9px] font-bold text-slate-500 transition-all text-center disabled:opacity-50" data-iters="3000" id="s2-iters-3k">
+                          3000
+                        </button>
+                        <button class="s2-iters-btn px-2 py-1.5 bg-slate-50 border border-black/5 dark:bg-slate-900 dark:border-white/10 rounded text-[9px] font-bold text-slate-500 transition-all text-center disabled:opacity-50" data-iters="5000" id="s2-iters-5k">
+                          5000
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-2" for="s2-crop-size">Crop Size</label>
+                        <select id="s2-crop-size" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-lg text-xs text-slate-800 dark:text-slate-200 outline-none">
+                          <option value="128">128 × 128</option>
+                          <option value="256" selected>256 × 256</option>
+                          <option value="512">512 × 512</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-2" for="s2-mask-source">Mask Source</label>
+                        <select id="s2-mask-source" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-lg text-xs text-slate-800 dark:text-slate-200 outline-none">
+                          <option value="dn" selected>Hybrid (SCL + DN 240–255)</option>
+                          <option value="scl">ESA SCL Band (Clouds Only)</option>
+                          <option value="unet">U-Net Segmenter (Predicted Mask)</option>
+                        </select>
+                        <button class="btn btn--secondary w-full py-2 mt-2 rounded-lg font-bold text-xs" id="s2-calc-mask-btn">
+                          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Calculate Cloud Mask
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col gap-2 mt-2 pt-2 border-t border-black/5">
+                    <button class="btn btn--primary py-3 rounded-xl font-bold text-xs" id="s2-run-opt-btn" disabled>
+                      <i data-lucide="play" class="w-4 h-4"></i> Run Live DIP+PINN
+                    </button>
+                    <button class="btn btn--secondary py-3 rounded-xl font-bold text-xs bg-purple-500/10 text-purple-600 border-purple-500/20 hover:bg-purple-500/20" id="s2-run-ablation-btn" disabled>
+                      <i data-lucide="layers" class="w-4 h-4"></i> Run Ablation Study
+                    </button>
+                    <div class="grid grid-cols-2 gap-2">
+                      <button class="btn btn--secondary py-2.5 rounded-lg font-bold text-xs" id="s2-pause-opt-btn" style="display:none;"><i data-lucide="pause" class="w-3.5 h-3.5"></i> Pause</button>
+                      <button class="btn btn--danger py-2.5 rounded-lg font-bold text-xs text-red-500 border-red-500/20" id="s2-cancel-opt-btn" style="display:none;"><i data-lucide="stop-circle" class="w-3.5 h-3.5"></i> Cancel</button>
+                    </div>
+                    <button class="btn btn--ghost py-3 rounded-xl font-bold text-xs" id="s2-export-report-btn" disabled>
+                      <i data-lucide="file-text" class="w-4.5 h-4.5"></i> Export Report
+                    </button>
+
+                    
+                    <details class="group bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden mt-4">
+                      <summary class="flex justify-between items-center p-3 cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <div class="flex items-center gap-2 font-bold text-xs text-slate-700 dark:text-slate-300">
+                          <i data-lucide="sliders" class="w-4 h-4 text-slate-400"></i>
+                          Advanced PINN Parameters
+                        </div>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180"></i>
+                      </summary>
+                      
+                      <!-- Hidden true inputs for app.js to read from -->
+                      <input type="hidden" id="s2-lr-input" value="0.003" />
+                      <input type="hidden" id="s2-angstrom-input" value="1.3" />
+                      <input type="hidden" id="s2-lambda-asm-input" value="0.6" />
+                      <input type="hidden" id="s2-lambda-rte-input" value="0.3" />
+                      <input type="hidden" id="s2-lambda-ndvi-input" value="0.08" />
+                      <input type="hidden" id="s2-lambda-tv-input" value="5e-5" />
+                      <input type="hidden" id="s2-lambda-sam-input" value="0.08" />
+                      <input type="hidden" id="s2-lambda-t-prior-input" value="0.3" />
+                      <input type="hidden" id="s2-lambda-perceptual-input" value="0.10" />
+                      <input type="hidden" id="s2-lambda-edge-input" value="0.08" />
+                      <input type="hidden" id="s2-lambdas-csv-input" value="0.4927, 0.5598, 0.6646, 0.8328" />
+                      <input type="hidden" id="s2-beta-abs-csv-input" value="0.002, 0.015, 0.010, 0.005" />
+
+                      <div class="p-4 border-t border-slate-200 dark:border-white/10">
+                        <div class="grid grid-cols-2 gap-4">
+                          <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 cursor-help" title="Full Form: Learning Rate&#10;Range: 0.001 to 0.01&#10;What it does: Controls optimization speed.&#10;How it does it: Determines the step size the optimizer takes when updating network weights at each iteration.">Learning Rate (η)</label>
+                            <input type="number" id="s2-lr-input-visible" class="w-full px-3 py-2 bg-white dark:bg-brand-darksurface border border-slate-200 dark:border-white/10 rounded-lg text-xs outline-none" value="0.003" step="0.001" min="0.001" />
+                          </div>
+                          <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 cursor-help" title="Full Form: Ångström Exponent&#10;Range: 0.5 to 2.5 (1.3 is typical for clear sky)&#10;What it does: Parameterizes aerosol scattering across different wavelengths.&#10;How it does it: Used in physics equations to estimate how light of different colors scatters due to particles in the atmosphere.">Ångström Exponent (α)</label>
+                            <input type="number" id="s2-angstrom-input-visible" class="w-full px-3 py-2 bg-white dark:bg-brand-darksurface border border-slate-200 dark:border-white/10 rounded-lg text-xs outline-none" value="1.3" step="0.1" />
+                          </div>
+                          <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 cursor-help" title="Full Form: Atmospheric Scattering Model Weight&#10;Range: 0.0 to 1.0&#10;What it does: Controls the strength of the atmospheric physics constraints.&#10;How it does it: Penalizes the model if the generated clear image and cloud thickness do not reconstruct the original cloudy input according to the atmospheric scattering equation.">ASM Weight (λ_asm)</label>
+                            <input type="number" id="s2-lambda-asm-input-visible" class="w-full px-3 py-2 bg-white dark:bg-brand-darksurface border border-slate-200 dark:border-white/10 rounded-lg text-xs outline-none" value="0.6" step="0.1" />
+                          </div>
+                          <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 cursor-help" title="Full Form: Radiative Transfer Equation Weight&#10;Range: 0.0 to 1.0&#10;What it does: Complements ASM by enforcing physical light propagation.&#10;How it does it: Computes loss based on another formulation of radiative transfer to ensure the restored reflectance is physically plausible.">RTE Weight (λ_rte)</label>
+                            <input type="number" id="s2-lambda-rte-input-visible" class="w-full px-3 py-2 bg-white dark:bg-brand-darksurface border border-slate-200 dark:border-white/10 rounded-lg text-xs outline-none" value="0.3" step="0.05" />
+                          </div>
+                          <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 cursor-help" title="Full Form: Normalized Difference Vegetation Index Weight&#10;Range: 0.0 to 0.5&#10;What it does: Preserves vegetation signatures.&#10;How it does it: Forces the NDVI (calculated using NIR and Red bands) of the inpainted region to closely match the natural NDVI of surrounding clear vegetation pixels.">NDVI Weight (λ_ndvi)</label>
+                            <input type="number" id="s2-lambda-ndvi-input-visible" class="w-full px-3 py-2 bg-white dark:bg-brand-darksurface border border-slate-200 dark:border-white/10 rounded-lg text-xs outline-none" value="0.08" step="0.01" />
+                          </div>
+                          <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 cursor-help" title="Full Form: Total Variation Weight&#10;Range: 1e-6 to 1e-3&#10;What it does: Controls spatial smoothness to reduce random noise.&#10;How it does it: Computes gradients between adjacent pixels. High values blur the image, low values preserve texture but may leave speckle noise.">TV Weight (λ_tv)</label>
+                            <input type="number" id="s2-lambda-tv-input-visible" class="w-full px-3 py-2 bg-white dark:bg-brand-darksurface border border-slate-200 dark:border-white/10 rounded-lg text-xs outline-none" value="5e-5" step="1e-6" />
+                          </div>
+                          <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 cursor-help" title="Full Form: Spectral Angle Mapper Weight&#10;Range: 0.0 to 0.5&#10;What it does: Preserves correct color ratios and spectral signatures.&#10;How it does it: Treats a pixel's bands as an N-dimensional vector and minimizes the angle between the generated pixel vector and the expected true color vector.">SAM Weight (λ_sam)</label>
+                            <input type="number" id="s2-lambda-sam-input-visible" class="w-full px-3 py-2 bg-white dark:bg-brand-darksurface border border-slate-200 dark:border-white/10 rounded-lg text-xs outline-none" value="0.08" step="0.01" />
+                          </div>
+                          <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 cursor-help" title="Full Form: Transmission Prior Weight&#10;Range: 0.0 to 1.0&#10;What it does: Guides the model's guess of how thick the clouds are.&#10;How it does it: Anchors the transmission map 't' to a physically estimated heuristic during early iterations, preventing the model from collapsing into trivial mathematical solutions.">t-Prior Weight (λ_t_prior)</label>
+                            <input type="number" id="s2-lambda-t-prior-input-visible" class="w-full px-3 py-2 bg-white dark:bg-brand-darksurface border border-slate-200 dark:border-white/10 rounded-lg text-xs outline-none" value="0.3" step="0.1" />
+                          </div>
+                          <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 cursor-help" title="Full Form: Perceptual Loss Weight (VGG)&#10;Range: 0.0 to 0.5&#10;What it does: Ensures realistic visual quality and natural features.&#10;How it does it: Passes images through a pre-trained VGG network and computes differences in deep feature maps instead of raw pixel values.">Perceptual Weight</label>
+                            <input type="number" id="s2-lambda-perceptual-input-visible" class="w-full px-3 py-2 bg-white dark:bg-brand-darksurface border border-slate-200 dark:border-white/10 rounded-lg text-xs outline-none" value="0.10" step="0.01" />
+                          </div>
+                          <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 cursor-help" title="Full Form: Sobel Edge Loss Weight&#10;Range: 0.0 to 0.5&#10;What it does: Keeps boundaries, roads, and structures sharp.&#10;How it does it: Applies Sobel edge-detection filters and penalizes the network if edges are smoothed or destroyed during inpainting.">Edge Weight</label>
+                            <input type="number" id="s2-lambda-edge-input-visible" class="w-full px-3 py-2 bg-white dark:bg-brand-darksurface border border-slate-200 dark:border-white/10 rounded-lg text-xs outline-none" value="0.08" step="0.01" />
+                          </div>
+                          <div class="col-span-2">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 cursor-help" title="Full Form: Sentinel-2 Band Wavelengths&#10;Range: Physical constants&#10;What it does: Feeds physical light wavelengths to the scattering model.&#10;How it does it: Used directly in the Ångström scattering calculations.">Band Wavelengths (λ B02, B03, B04, B08 in μm)</label>
+                            <input type="text" id="s2-lambdas-csv-input-visible" class="w-full px-3 py-2 bg-white dark:bg-brand-darksurface border border-slate-200 dark:border-white/10 rounded-lg text-xs outline-none font-semibold" value="0.4927, 0.5598, 0.6646, 0.8328" />
+                          </div>
+                          <div class="col-span-2">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 cursor-help" title="Full Form: Ozone and Gas Absorption Coefficients&#10;Range: Physical constants&#10;What it does: Corrects for light absorbed by atmospheric gases.&#10;How it does it: Reduces the expected reflectance at ground level based on gas concentrations at different wavelengths.">Band Gas Absorption (β_abs B02, B03, B04, B08)</label>
+                            <input type="text" id="s2-beta-abs-csv-input-visible" class="w-full px-3 py-2 bg-white dark:bg-brand-darksurface border border-slate-200 dark:border-white/10 rounded-lg text-xs outline-none font-semibold" value="0.002, 0.015, 0.010, 0.005" />
+                          </div>
+                        </div>
+                        
+                        <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-slate-200 dark:border-white/5">
+                          <button class="px-3 py-1.5 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-400 transition-all" id="s2-advanced-modal-reset">Reset Defaults</button>
+                          <button class="px-3 py-1.5 bg-teal-500 hover:bg-teal-600 text-slate-950 rounded-lg text-[10px] font-black transition-all shadow-md shadow-teal-500/10" id="s2-advanced-params-save">Save Inputs</button>
+                        </div>
+                        
+                        <script>
+                          // Sync functionality for Advanced PINN Parameters
+                          document.getElementById('s2-advanced-params-save').addEventListener('click', function() {
+                            const ids = ['lr', 'angstrom', 'lambda-asm', 'lambda-rte', 'lambda-ndvi', 'lambda-tv', 'lambda-sam', 'lambda-t-prior', 'lambda-perceptual', 'lambda-edge', 'lambdas-csv', 'beta-abs-csv'];
+                            ids.forEach(id => {
+                              const visibleVal = document.getElementById('s2-' + id + '-input-visible').value;
+                              document.getElementById('s2-' + id + '-input').value = visibleVal;
+                            });
+                            const btn = this;
+                            const oldText = btn.innerText;
+                            btn.innerText = 'Saved!';
+                            btn.classList.add('bg-green-500');
+                            setTimeout(() => {
+                              btn.innerText = oldText;
+                              btn.classList.remove('bg-green-500');
+                            }, 1500);
+                          });
+
+                          // Override reset functionality since we uncoupled from app.js resetting visible inputs directly
+                          // Actually app.js resets 's2-*-input' (which are now hidden). We also need to reset the visible ones.
+                          document.getElementById('s2-advanced-modal-reset').addEventListener('click', function() {
+                            const defaultVals = {
+                              'lr': '0.003', 'angstrom': '1.3', 'lambda-asm': '0.6', 'lambda-rte': '0.3',
+                              'lambda-ndvi': '0.08', 'lambda-tv': '5e-5', 'lambda-sam': '0.08', 'lambda-t-prior': '0.3',
+                              'lambda-perceptual': '0.10', 'lambda-edge': '0.08', 'lambdas-csv': '0.4927, 0.5598, 0.6646, 0.8328',
+                              'beta-abs-csv': '0.002, 0.015, 0.010, 0.005'
+                            };
+                            for (const [id, val] of Object.entries(defaultVals)) {
+                               const elVis = document.getElementById('s2-' + id + '-input-visible');
+                               if (elVis) elVis.value = val;
+                               // app.js will handle resetting the hidden ones, or we can just do it to be safe
+                               const elHid = document.getElementById('s2-' + id + '-input');
+                               if (elHid) elHid.value = val;
+                            }
+                          });
+                        </script>
+                      </div>
+                    </details>
+
+
+                    <button class="btn btn--ghost py-3 rounded-xl font-bold text-xs" id="s2-reset-btn">
+                      <i data-lucide="rotate-ccw" class="w-4.5 h-4.5"></i> Reset Inputs
+                    </button>
+                  </div>
+                  
+                  <!-- Progress bar -->
+                  <div class="progress-bar-track w-full bg-slate-200 dark:bg-slate-800 h-6 rounded-full relative overflow-hidden flex items-center justify-center border border-black/5" id="s2-progress-track" style="display:none;">
+                    <div class="progress-bar-fill bg-teal-500 dark:bg-teal-400 absolute top-0 left-0 h-full transition-all duration-300" id="s2-progress-fill" style="width:0%"></div>
+                    <span class="progress-bar-label text-[10px] font-black text-slate-700 dark:text-slate-100 z-10 uppercase tracking-widest" id="s2-step-badge">Step 0</span>
+                  </div>
+                </div>
+
+                <!-- Console metadata timeline -->
+                <div class="bg-white/40 dark:bg-brand-darksurface/40 border border-black/5 dark:border-white/5 rounded-premium p-5 flex flex-col gap-4 shadow-md">
+                  <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 border-b border-slate-100 dark:border-white/5 pb-2 flex items-center gap-1.5"><i data-lucide="terminal" class="w-4 h-4"></i> Optimization Console</h3>
+                  
+                  <div class="flex flex-col gap-3 font-semibold text-xs">
+                    <div class="flex justify-between border-b border-black/5 dark:border-white/5 pb-1">
+                      <span class="text-slate-400">Target Area</span>
+                      <span id="s2-info-sample" class="truncate max-w-[150px]">Sentinel-2 Crop</span>
+                    </div>
+                    <div class="flex justify-between border-b border-black/5 dark:border-white/5 pb-1">
+                      <span class="text-slate-400">Active Mask</span>
+                      <strong id="s2-info-mask-source" class="text-teal-400 font-bold">ESA SCL Band</strong>
+                    </div>
+                    <div class="flex justify-between border-b border-black/5 dark:border-white/5 pb-1">
+                      <span class="text-slate-400">Cloud Cover</span>
+                      <strong id="s2-info-coverage" class="text-red-400 font-bold">—</strong>
+                    </div>
+                  </div>
+
+                  <!-- Live S2 Console -->
+                  <div id="s2-log-panel" class="dippinn-scrollbar bg-slate-900 rounded-lg p-3 text-[10px] font-mono text-zinc-400 h-[150px] overflow-y-auto border border-white/5 shadow-inner mt-1">
+                    <div class="s2-log-line s2-log-line--hint text-zinc-600 italic">Waiting for pipeline to start...</div>
+                  </div>
+                  
+                  <!-- Real-time Metrics (Single Image No-Reference & Spectral) -->
+                  <div class="flex flex-col gap-2 mt-1">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Single-Image Quality & Physical Metrics (No GT Required)</span>
+                    </div>
+                    <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                      <div class="flex flex-col bg-slate-100 dark:bg-black/20 rounded p-2 border border-black/5 dark:border-white/5 text-center">
+                          <span class="text-[8px] uppercase text-zinc-500 font-bold" title="Natural Image Quality Evaluator (Lower is better)">NIQE</span>
+                          <span id="s2-met-niqe" class="text-xs font-black text-teal-400">3.82</span>
+                      </div>
+                      <div class="flex flex-col bg-slate-100 dark:bg-black/20 rounded p-2 border border-black/5 dark:border-white/5 text-center">
+                          <span class="text-[8px] uppercase text-zinc-500 font-bold" title="Blind/Referenceless Image Spatial Quality Evaluator (Lower is better)">BRISQUE</span>
+                          <span id="s2-met-brisque" class="text-xs font-black text-cyan-400">24.50</span>
+                      </div>
+                      <div class="flex flex-col bg-slate-100 dark:bg-black/20 rounded p-2 border border-black/5 dark:border-white/5 text-center">
+                          <span class="text-[8px] uppercase text-zinc-500 font-bold" title="Perception based Image Quality Evaluator (Lower is better)">PIQE</span>
+                          <span id="s2-met-piqe" class="text-xs font-black text-sky-400">19.20</span>
+                      </div>
+                      <div class="flex flex-col bg-slate-100 dark:bg-black/20 rounded p-2 border border-black/5 dark:border-white/5 text-center">
+                          <span class="text-[8px] uppercase text-zinc-500 font-bold" title="Shannon Entropy / Information Richness (Higher is richer)">Entropy</span>
+                          <span id="s2-met-entropy" class="text-xs font-black text-purple-400">7.14</span>
+                      </div>
+                      <div class="flex flex-col bg-slate-100 dark:bg-black/20 rounded p-2 border border-black/5 dark:border-white/5 text-center">
+                          <span class="text-[8px] uppercase text-zinc-500 font-bold" title="Tenengrad Spatial Edge Gradient Sharpness">Sharpness</span>
+                          <span id="s2-met-sharpness" class="text-xs font-black text-amber-400">0.084</span>
+                      </div>
+                      <div class="flex flex-col bg-slate-100 dark:bg-black/20 rounded p-2 border border-black/5 dark:border-white/5 text-center">
+                          <span class="text-[8px] uppercase text-zinc-500 font-bold" title="Spectral Angle Mapper (Lower is closer to natural ground)">SAM (rad)</span>
+                          <span id="s2-met-sam" class="text-xs font-black text-emerald-400">0.0798</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="hidden">
+                    <span id="s2-time-unet">—</span>
+                    <span id="s2-time-dip">—</span>
+                    <span id="s2-time-pinn">—</span>
+                    <span id="s2-time-captum">—</span>
+                  </div>
+                </div>
+
+                <!-- Real-time Diagnostics -->
+                <div class="bg-white/40 dark:bg-brand-darksurface/40 border border-black/5 dark:border-white/5 rounded-premium p-5 flex flex-col gap-3 shadow-md" id="s2-diagnostics-card" style="display:none;">
+                  <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300">🛰️ Real-time Diagnostics</h3>
+                  <div class="flex flex-col gap-3">
+                    <div>
+                      <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Atmospheric Light A</span>
+                      <div id="s2-diag-light" class="font-mono text-[10px] bg-slate-900 border border-black/10 dark:border-white/5 p-2 rounded-lg text-teal-400">
+                        B2: —, B3: —, B4: —, B8: —
+                      </div>
+                    </div>
+                    <div>
+                      <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Transmission Stats t</span>
+                      <div id="s2-diag-transmission" class="font-mono text-[10px] bg-slate-900 border border-black/10 dark:border-white/5 p-2 rounded-lg text-purple-400">
+                        Min: —, Max: —, Mean: —
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Checklist execution -->
+                <div class="bg-white/40 dark:bg-brand-darksurface/40 border border-black/5 dark:border-white/5 rounded-premium p-5 flex flex-col gap-4">
+                  <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 border-b border-black/5 dark:border-white/5 pb-2 flex items-center gap-1.5"><i data-lucide="check-square" class="w-4 h-4"></i> Execution Checklist</h3>
+                  <div class="flex flex-col gap-3" id="s2-pipeline-checklist">
+                    <div class="checklist-item" id="s2-item-load"><span class="check-icon">⏳</span> <span>Loading Bands</span></div>
+                    <div class="checklist-item" id="s2-item-unet"><span class="check-icon">⏳</span> <span>U-Net Segmentation</span></div>
+                    <div class="checklist-item" id="s2-item-light"><span class="check-icon">⏳</span> <span>ASM Estimation</span></div>
+                    <div class="checklist-item" id="s2-item-dip"><span class="check-icon">⏳</span> <span>DIP Prior Convergence</span></div>
+                    <div class="checklist-item" id="s2-item-pinn"><span class="check-icon">⏳</span> <span>PINN Physics Optimization</span></div>
+                    <div class="checklist-item" id="s2-item-captum"><span class="check-icon">⏳</span> <span>Captum XAI Attributions</span></div>
+                  </div>
+                </div>
+                
+                <!-- S2 Downloads panel -->
+                <div class="bg-white/40 dark:bg-brand-darksurface/40 border border-black/5 dark:border-white/5 rounded-premium p-5 flex flex-col gap-3">
+                  <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><i data-lucide="download" class="w-4 h-4"></i> Export Outputs</h3>
+                  <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <button class="p-2.5 bg-slate-50 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-black/5 dark:border-white/10 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 flex items-center justify-center gap-1 transition-colors" id="s2-dl-input"><i data-lucide="file-down" class="w-4 h-4"></i> Input GeoTIFF</button>
+                    <button class="p-2.5 bg-slate-50 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-black/5 dark:border-white/10 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 flex items-center justify-center gap-1 transition-colors" id="s2-dl-tiff"><i data-lucide="file-down" class="w-4 h-4"></i> Output GeoTIFF</button>
+                    <button class="p-2.5 bg-slate-50 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-black/5 dark:border-white/10 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 flex items-center justify-center gap-1 transition-colors" id="s2-dl-mask"><i data-lucide="file-down" class="w-4 h-4"></i> Cloud Mask</button>
+                    <button class="p-2.5 bg-slate-50 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-black/5 dark:border-white/10 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 flex items-center justify-center gap-1 transition-colors" id="s2-dl-trans"><i data-lucide="file-down" class="w-4 h-4"></i> Trans Map</button>
+                    <button class="p-2.5 bg-slate-50 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-black/5 dark:border-white/10 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 flex items-center justify-center gap-1 transition-colors" id="s2-dl-xai"><i data-lucide="file-down" class="w-4 h-4"></i> XAI Heatmap</button>
+                    <button class="p-2.5 bg-slate-50 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-black/5 dark:border-white/10 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 flex items-center justify-center gap-1 transition-colors" id="s2-dl-metrics"><i data-lucide="file-down" class="w-4 h-4"></i> CSV Metrics</button>
+                    <button class="p-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/15 rounded-lg text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1 transition-colors" id="s2-dl-report"><i data-lucide="file-text" class="w-4 h-4"></i> PDF Report</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ablation Study Modal -->
+            <div id="ablation-modal" class="fixed inset-0 z-[100] hidden bg-black/80 flex items-center justify-center p-6 backdrop-blur-sm transition-opacity">
+              <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl w-full max-w-6xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden relative">
+                
+                <!-- Header -->
+                <div class="px-6 py-4 border-b border-slate-200 dark:border-white/5 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                  <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i data-lucide="layers" class="w-5 h-5 text-purple-500"></i> Ablation Study Results
+                  </h2>
+                  <button id="ablation-modal-close" class="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                  </button>
+                </div>
+                
+                <!-- Body -->
+                <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+                  
+                  <!-- Progress/Status -->
+                  <div id="ablation-status-container" class="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-6 h-6 border-2 border-purple-500/20 border-t-purple-500 rounded-full animate-spin" id="ablation-spinner"></div>
+                      <span id="ablation-status-text" class="text-sm font-bold text-purple-600 dark:text-purple-400">Initializing ablation sequence...</span>
+                    </div>
+                    <div class="flex gap-2">
+                      <span class="px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded-md text-[10px] font-bold text-slate-500" id="ablation-badge-1">1. Vanilla DIP</span>
+                      <span class="px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded-md text-[10px] font-bold text-slate-500" id="ablation-badge-2">2. DIP + Mask</span>
+                      <span class="px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded-md text-[10px] font-bold text-slate-500" id="ablation-badge-3">3. Proposed</span>
+                    </div>
+                  </div>
+
+                  <!-- 3 Column Comparison -->
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    <!-- Col 1 -->
+                    <div class="flex flex-col gap-3">
+                      <div class="text-center">
+                        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200">Baseline 1: Vanilla DIP</h3>
+                        <p class="text-[10px] text-slate-500 mt-1">No constraints, No physics</p>
+                      </div>
+                      <div class="aspect-square bg-slate-900 rounded-xl overflow-hidden relative border border-slate-200 dark:border-white/10">
+                        <img id="ablation-img-1" class="w-full h-full object-cover hidden" />
+                        <div class="absolute inset-0 flex items-center justify-center text-xs text-slate-500" id="ablation-ph-1">Pending...</div>
+                      </div>
+                      <div class="grid grid-cols-2 gap-2 text-center mt-2">
+                        <div class="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-white/5">
+                          <div class="text-[9px] font-bold text-slate-400 uppercase">PSNR</div>
+                          <div class="text-sm font-black text-slate-700 dark:text-slate-300" id="ablation-psnr-1">—</div>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-white/5">
+                          <div class="text-[9px] font-bold text-slate-400 uppercase">SSIM</div>
+                          <div class="text-sm font-black text-slate-700 dark:text-slate-300" id="ablation-ssim-1">—</div>
+                        </div>
+                        <div class="col-span-2 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-white/5">
+                          <div class="text-[9px] font-bold text-slate-400 uppercase">SAM</div>
+                          <div class="text-sm font-black text-slate-700 dark:text-slate-300" id="ablation-sam-1">—</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Col 2 -->
+                    <div class="flex flex-col gap-3">
+                      <div class="text-center">
+                        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200">Baseline 2: DIP + Mask</h3>
+                        <p class="text-[10px] text-slate-500 mt-1">Cloud masked, basic fidelity</p>
+                      </div>
+                      <div class="aspect-square bg-slate-900 rounded-xl overflow-hidden relative border border-slate-200 dark:border-white/10">
+                        <img id="ablation-img-2" class="w-full h-full object-cover hidden" />
+                        <div class="absolute inset-0 flex items-center justify-center text-xs text-slate-500" id="ablation-ph-2">Pending...</div>
+                      </div>
+                      <div class="grid grid-cols-2 gap-2 text-center mt-2">
+                        <div class="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-white/5">
+                          <div class="text-[9px] font-bold text-slate-400 uppercase">PSNR</div>
+                          <div class="text-sm font-black text-slate-700 dark:text-slate-300" id="ablation-psnr-2">—</div>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-white/5">
+                          <div class="text-[9px] font-bold text-slate-400 uppercase">SSIM</div>
+                          <div class="text-sm font-black text-slate-700 dark:text-slate-300" id="ablation-ssim-2">—</div>
+                        </div>
+                        <div class="col-span-2 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-200 dark:border-white/5">
+                          <div class="text-[9px] font-bold text-slate-400 uppercase">SAM</div>
+                          <div class="text-sm font-black text-slate-700 dark:text-slate-300" id="ablation-sam-2">—</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Col 3 -->
+                    <div class="flex flex-col gap-3 relative">
+                      <!-- Highlight badge -->
+                      <div class="absolute -top-3 -right-3 bg-emerald-500 text-white text-[9px] font-bold px-2 py-1 rounded-full shadow-lg z-10 animate-pulse">PROPOSED</div>
+                      <div class="text-center">
+                        <h3 class="text-sm font-bold text-emerald-600 dark:text-emerald-400">Proposed PINN+DPS</h3>
+                        <p class="text-[10px] text-slate-500 mt-1">Physics & Spectral Constraints</p>
+                      </div>
+                      <div class="aspect-square bg-slate-900 rounded-xl overflow-hidden relative border-2 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                        <img id="ablation-img-3" class="w-full h-full object-cover hidden" />
+                        <div class="absolute inset-0 flex items-center justify-center text-xs text-slate-500" id="ablation-ph-3">Pending...</div>
+                      </div>
+                      <div class="grid grid-cols-2 gap-2 text-center mt-2">
+                        <div class="bg-emerald-50 dark:bg-emerald-900/20 p-2 rounded-lg border border-emerald-200 dark:border-emerald-500/20">
+                          <div class="text-[9px] font-bold text-emerald-600 dark:text-emerald-500 uppercase">PSNR</div>
+                          <div class="text-sm font-black text-emerald-700 dark:text-emerald-400" id="ablation-psnr-3">—</div>
+                        </div>
+                        <div class="bg-emerald-50 dark:bg-emerald-900/20 p-2 rounded-lg border border-emerald-200 dark:border-emerald-500/20">
+                          <div class="text-[9px] font-bold text-emerald-600 dark:text-emerald-500 uppercase">SSIM</div>
+                          <div class="text-sm font-black text-emerald-700 dark:text-emerald-400" id="ablation-ssim-3">—</div>
+                        </div>
+                        <div class="col-span-2 bg-emerald-50 dark:bg-emerald-900/20 p-2 rounded-lg border border-emerald-200 dark:border-emerald-500/20">
+                          <div class="text-[9px] font-bold text-emerald-600 dark:text-emerald-500 uppercase">SAM</div>
+                          <div class="text-sm font-black text-emerald-700 dark:text-emerald-400" id="ablation-sam-3">—</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <script>
+              document.addEventListener('DOMContentLoaded', () => {
+                const ablationBtn = document.getElementById('s2-run-ablation-btn');
+                const modal = document.getElementById('ablation-modal');
+                const closeBtn = document.getElementById('ablation-modal-close');
+                const statusText = document.getElementById('ablation-status-text');
+                const spinner = document.getElementById('ablation-spinner');
+
+                // Enable button when run button is enabled (via app.js logic)
+                const observer = new MutationObserver((mutations) => {
+                  mutations.forEach((m) => {
+                    if (m.attributeName === 'disabled') {
+                      ablationBtn.disabled = document.getElementById('s2-run-opt-btn').disabled;
+                    }
+                  });
+                });
+                observer.observe(document.getElementById('s2-run-opt-btn'), { attributes: true });
+
+                closeBtn.addEventListener('click', () => {
+                  modal.classList.add('hidden');
+                });
+
+                ablationBtn.addEventListener('click', async () => {
+                  modal.classList.remove('hidden');
+                  
+                  // Reset UI
+                  for(let i=1; i<=3; i++) {
+                    document.getElementById('ablation-img-'+i).classList.add('hidden');
+                    document.getElementById('ablation-ph-'+i).classList.remove('hidden');
+                    document.getElementById('ablation-psnr-'+i).innerText = '—';
+                    document.getElementById('ablation-ssim-'+i).innerText = '—';
+                    document.getElementById('ablation-sam-'+i).innerText = '—';
+                    
+                    const badge = document.getElementById('ablation-badge-'+i);
+                    badge.classList.remove('bg-purple-500', 'text-white');
+                    badge.classList.add('bg-slate-200', 'dark:bg-slate-800', 'text-slate-500');
+                  }
+
+                  spinner.classList.remove('hidden');
+                  
+                  // Keep track of the original parameters to restore them later
+                  const originalValues = {};
+                  const paramIds = ['lr', 'angstrom', 'lambda-asm', 'lambda-rte', 'lambda-ndvi', 'lambda-tv', 'lambda-sam', 'lambda-t-prior', 'lambda-perceptual', 'lambda-edge'];
+                  paramIds.forEach(id => {
+                    originalValues[id] = document.getElementById('s2-' + id + '-input').value;
+                  });
+
+                  // We need to run the standard startS2Optimization() but intercept its state
+                  // Since startS2Optimization is deeply tied to app.js, we will just orchestrate via the existing SSE endpoint manually
+                  
+                  const activeMap = document.querySelector('.s2-map-tabs .tab-btn--active').dataset.s2Map;
+                  const x = document.getElementById('s2-input-lng').value;
+                  const y = document.getElementById('s2-input-lat').value;
+                  const sz = document.getElementById('s2-crop-size').value;
+                  const iters = document.getElementById('s2-iters-input').value;
+
+                  async function runStage(stageNum, name, configs) {
+                    statusText.innerText = `Running ${name}...`;
+                    const badge = document.getElementById('ablation-badge-'+stageNum);
+                    badge.classList.remove('bg-slate-200', 'dark:bg-slate-800', 'text-slate-500');
+                    badge.classList.add('bg-purple-500', 'text-white');
+
+                    const fd = new FormData();
+                    fd.append('map_id', activeMap);
+                    fd.append('x', x);
+                    fd.append('y', y);
+                    fd.append('crop_size', sz);
+                    fd.append('iters', iters);
+                    
+                    // Apply configs
+                    for (const [k, v] of Object.entries(configs)) {
+                      fd.append(k, v);
+                    }
+
+                    // Use the native SSE logic simplified for this modal
+                    return new Promise((resolve, reject) => {
+                      // Fetch the /api/s2_optimize endpoint
+                      const xhr = new XMLHttpRequest();
+                      xhr.open('POST', '/api/s2_optimize', true);
+                      
+                      let lastResult = null;
+                      
+                      xhr.onreadystatechange = function() {
+                        if (xhr.readyState === 3 || xhr.readyState === 4) {
+                          const lines = xhr.responseText.split('\\n');
+                          for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                              try {
+                                const data = JSON.parse(line.substring(6));
+                                if (data.stage === 'restored' || data.stage === 'dip' || data.stage === 'pinn') {
+                                  if (data.J_b64) {
+                                    document.getElementById('ablation-img-'+stageNum).src = "data:image/png;base64," + data.J_b64;
+                                    document.getElementById('ablation-img-'+stageNum).classList.remove('hidden');
+                                    document.getElementById('ablation-ph-'+stageNum).classList.add('hidden');
+                                  }
+                                }
+                                if (data.metrics) {
+                                  if (data.metrics.psnr !== undefined) {
+                                    document.getElementById('ablation-psnr-'+stageNum).innerText = data.metrics.psnr.toFixed(2);
+                                  }
+                                  if (data.metrics.ssim !== undefined) {
+                                    document.getElementById('ablation-ssim-'+stageNum).innerText = data.metrics.ssim.toFixed(4);
+                                  }
+                                  if (data.metrics.sam !== undefined) {
+                                    document.getElementById('ablation-sam-'+stageNum).innerText = data.metrics.sam.toFixed(4);
+                                  }
+                                }
+                                if (data.status === 'completed') {
+                                  resolve(true);
+                                }
+                                if (data.status === 'error') {
+                                  reject(data.message);
+                                }
+                              } catch(e) {}
+                            }
+                          }
+                        }
+                      };
+                      xhr.send(fd);
+                    });
+                  }
+
+                  try {
+                    // Run 1: Vanilla DIP (No constraints, No Mask fidelity)
+                    // Note: original DIP *does* use a mask for inpainting, otherwise it reconstructs the cloud.
+                    // So we will pass the mask, but all physics = 0
+                    await runStage(1, "Baseline 1: Vanilla DIP", {
+                      lr: originalValues['lr'],
+                      lambda_asm: "0.0", lambda_rte: "0.0", lambda_ndvi: "0.0",
+                      lambda_tv: "0.0", lambda_sam: "0.0", lambda_t_prior: "0.0",
+                      lambda_perceptual: "0.0", lambda_edge: "0.0",
+                      use_dps: "0"
+                    });
+
+                    // Run 2: DIP + Mask (Basic fidelity, maybe TV)
+                    await runStage(2, "Baseline 2: DIP + Mask", {
+                      lr: originalValues['lr'],
+                      lambda_asm: "0.0", lambda_rte: "0.0", lambda_ndvi: "0.0",
+                      lambda_tv: "5e-5", lambda_sam: "0.0", lambda_t_prior: "0.0",
+                      lambda_perceptual: "0.0", lambda_edge: "0.0",
+                      use_dps: "0"
+                    });
+
+                    // Run 3: Proposed (PINN + Spectral + DPS)
+                    await runStage(3, "Proposed Model", {
+                      lr: originalValues['lr'],
+                      lambda_asm: "0.6", lambda_rte: "0.3", lambda_ndvi: "0.08",
+                      lambda_tv: "5e-5", lambda_sam: "0.08", lambda_t_prior: "0.3",
+                      lambda_perceptual: "0.10", lambda_edge: "0.08",
+                      use_dps: "1"
+                    });
+
+                    statusText.innerText = "Ablation Study Completed!";
+                    statusText.classList.replace('text-purple-600', 'text-emerald-600');
+                    statusText.classList.replace('dark:text-purple-400', 'dark:text-emerald-400');
+                    spinner.classList.add('hidden');
+
+                  } catch (e) {
+                    statusText.innerText = "Error running ablation: " + e;
+                    statusText.classList.replace('text-purple-600', 'text-red-500');
+                    spinner.classList.add('hidden');
+                  }
+                  
+                });
+              });
+            </script>
+          </div>

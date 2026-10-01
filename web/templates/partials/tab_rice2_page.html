@@ -1,0 +1,589 @@
+<div class="tab-panel" id="tab-rice2-page">
+          <style>
+            .checklist-item {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              padding: 8px 12px;
+              background: rgba(255,255,255,0.02);
+              border-radius: 6px;
+              color: var(--text-secondary);
+              transition: color 0.3s;
+            }
+
+            .checklist-item--active {
+              color: var(--neon-cyan);
+              font-weight: 500;
+            }
+
+            .checklist-item--done {
+              color: var(--neon-green);
+            }
+
+            .check-icon {
+              font-size: 14px;
+            }
+
+            @keyframes colorbarShimmer {
+              0% {
+                transform: translateX(-100%);
+                opacity: 0.15;
+              }
+              50% {
+                opacity: 0.6;
+              }
+              100% {
+                transform: translateX(100%);
+                opacity: 0.15;
+              }
+            }
+
+            .colorbar-pulse-shimmer {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+              animation: colorbarShimmer 2.2s ease-in-out infinite;
+              pointer-events: none;
+              border-radius: inherit;
+            }
+          </style>
+          <div class="pipeline-header"
+            style="flex-direction: column; align-items: stretch; gap: 15px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="pipeline-title-group">
+                <h3 style="margin: 0; font-size: 1.25rem;">🌾 RICE2 Dedicated Dataset & Reconstruction Engine</h3>
+                <p class="text-muted" style="margin-top: 4px;">Run real-time U-Net cloud segmentation & zero-shot
+                  DIP+PINN optimization on selected RICE2 images.</p>
+              </div>
+            </div>
+
+            <!-- Reconstruction Controls and Live Log Stacked Layout -->
+            <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 20px;">
+              <!-- Reconstruction Controls (Full Width) -->
+              <div class="glass-card" style="padding: 16px; margin: 0; display: flex; flex-direction: column;">
+                <h4 style="margin: 0 0 12px 0; color: var(--neon-cyan); font-size: 0.95rem; font-weight: 700;">⚙️ Reconstruction Controls</h4>
+
+                <!-- Active Sample Selection -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; align-items: flex-end; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed var(--border);">
+                  <div>
+                    <label class="field-label" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; display:block;">RICE Split</label>
+                    <select id="rice2-split-select" class="glass-select" style="width: 100%; padding: 8px; background: rgba(13, 21, 46, 0.8); border: 1px solid var(--border); color: var(--text-primary);" disabled>
+                      <option value="RICE2" selected>RICE2 (Dataset 2 - 736 Samples)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="field-label" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; display:block;">Sample Number</label>
+                    <div style="display: flex; gap: 6px; width: 100%;">
+                      <button class="btn btn--secondary" id="rice2-prev-btn" style="padding: 8px 12px; height: 35px; min-width: 40px; display: flex; align-items: center; justify-content: center;">◀</button>
+                      <input type="number" id="rice2-sample-num" class="glass-input" value="0" min="0" max="735" style="width: 100%; padding: 8px; text-align: center; height: 35px;" />
+                      <button class="btn btn--secondary" id="rice2-next-btn" style="padding: 8px 12px; height: 35px; min-width: 40px; display: flex; align-items: center; justify-content: center;">▶</button>
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 8px; flex-direction: column;">
+                    <div style="display: flex; gap: 6px;">
+                      <button class="btn btn--secondary" id="rice2-random-btn" style="flex: 1; padding: 6px 10px; height: 32px; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 4px;" title="Load a random sample from RICE2">🎲 Random Sample</button>
+                      <button class="btn btn--secondary" id="rice2-upload-trigger" style="flex: 1; padding: 6px 10px; height: 32px; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 4px; border-color: rgba(56, 189, 248, 0.4); color: var(--neon-cyan);" title="Upload a custom cloudy input image">📤 Upload New Input</button>
+                    </div>
+                    <input type="file" id="rice2-custom-file" accept="image/*" style="display: none;" />
+                  </div>
+                </div>
+
+                <!-- Parameters -->
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px;">
+                  <div>
+                    <label class="field-label" title="What: Number of optimization steps.&#10;Why: More iterations allow the model to converge better.&#10;Scale/Range: 1 to 5000+ steps" style="font-size:0.7rem; color:var(--text-muted); margin-bottom:4px; display:block; cursor:help;">Iterations <span style="font-size:0.6rem; color:#38bdf8;">[1-5000] ℹ️</span></label>
+                    <input type="number" id="rice2-iters-select" class="glass-input" value="300" min="1" max="5000" step="10" style="width: 100%; padding: 8px; text-align: center; background: rgba(13, 21, 46, 0.8); border: 1px solid var(--border); color: var(--text-primary);" />
+                  </div>
+                  <div>
+                    <label class="field-label" title="What: Step size for the optimizer (Adam).&#10;Why: Controls how fast the network learns.&#10;Scale/Range: [0.0001, 0.05]" style="font-size:0.7rem; color:var(--text-muted); margin-bottom:4px; display:block; cursor:help;">LR <span style="font-size:0.6rem; color:#38bdf8;">[0.001-0.05] ℹ️</span></label>
+                    <input type="number" id="rice2-lr-input" class="glass-input" value="0.005" step="0.001" style="width: 100%; padding: 8px; text-align: center;" />
+                  </div>
+                  <div>
+                    <label class="field-label" title="What: Atmospheric Scattering Model loss multiplier.&#10;Why: Forces the DIP to obey physical light scattering equations.&#10;Scale/Range: [0.0, 1.0]" style="font-size:0.7rem; color:var(--text-muted); margin-bottom:4px; display:block; cursor:help;">λ_ASM <span style="font-size:0.6rem; color:#10b981;">[0.0-1.0] ℹ️</span></label>
+                    <input type="number" id="rice2-lambda-asm" class="glass-input" value="0.6" step="0.01" style="width: 100%; padding: 8px; text-align: center;" />
+                  </div>
+                  <div>
+                    <label class="field-label" title="What: Radiative Transfer Equation loss multiplier.&#10;Why: Ensures correct transmission mapping.&#10;Scale/Range: [0.0, 0.5]" style="font-size:0.7rem; color:var(--text-muted); margin-bottom:4px; display:block; cursor:help;">λ_RTE <span style="font-size:0.6rem; color:#10b981;">[0.0-0.5] ℹ️</span></label>
+                    <input type="number" id="rice2-lambda-rte" class="glass-input" value="0.3" step="0.05" style="width: 100%; padding: 8px; text-align: center;" />
+                  </div>
+                  <div>
+                    <label class="field-label" title="What: Total Variation loss multiplier.&#10;Why: Enforces spatial smoothness to prevent noisy reconstructions.&#10;Scale/Range: [1e-6, 1e-3]" style="font-size:0.7rem; color:var(--text-muted); margin-bottom:4px; display:block; cursor:help;">TV Loss <span style="font-size:0.6rem; color:#a855f7;">[1e-6 - 1e-3] ℹ️</span></label>
+                    <input type="text" id="rice2-lambda-tv" class="glass-input" value="1e-5" style="width: 100%; padding: 8px; text-align: center;" />
+                  </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                  <button class="btn btn--primary" id="rice2-run-btn" style="flex: 2; padding: 10px 16px; font-weight: 700; background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; border: none; display: flex; align-items: center; justify-content: center; gap: 6px;">▶ Run Reconstruction</button>
+                  <button class="btn btn--secondary" id="rice2-pause-btn" style="display:none; flex: 1; padding: 10px 12px; font-size: 0.85rem; border: 1px solid var(--neon-cyan); color: var(--neon-cyan);">⏸ Pause</button>
+                  <button class="btn btn--secondary" id="rice2-resume-btn" style="display:none; flex: 1; padding: 10px 12px; font-size: 0.85rem; border: 1px solid var(--neon-green); color: var(--neon-green);">▶ Resume</button>
+                  <button class="btn btn--secondary" id="rice2-cancel-btn" style="display:none; flex: 1; padding: 10px 12px; font-size: 0.85rem; border: 1px solid #ef4444; color: #ef4444;">⏹ Stop Iteration</button>
+                  <button class="btn btn--secondary" id="rice2-save-btn" style="flex: 1; padding: 10px 12px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 4px;">💾 Save Config</button>
+                  <button class="btn btn--secondary" id="rice2-export-btn" style="flex: 1; padding: 10px 12px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 4px;">📄 Export</button>
+                  <button class="btn btn--secondary" id="rice2-reset-btn" style="flex: 1; padding: 10px 12px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 4px;">✕ Reset</button>
+                </div>
+              </div>
+
+              <!-- Right: Live Log Panel — Terminal Style -->
+              <div class="glass-card" style="padding: 0; margin: 0; display: flex; flex-direction: column; overflow: hidden; border-color: rgba(52, 211, 153, 0.25);">
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: rgba(3,7,18,0.8); border-bottom: 1px solid rgba(52,211,153,0.15);">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <!-- Traffic light dots -->
+                    <span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block;"></span>
+                    <span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
+                    <span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;"></span>
+                    <span style="margin-left: 8px; font-family: var(--font-mono); font-size: 0.72rem; color: #6b7280; letter-spacing: 0.05em;">📡 LIVE PROCESSING LOG</span>
+                  </div>
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <button onclick="document.getElementById('rice2-console').textContent=''; "
+                      style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:#6b7280;font-size:0.68rem;padding:2px 7px;cursor:pointer;" title="Clear log">✕ Clear</button>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('rice2-console').textContent).then(()=>showToast && showToast('Log copied!','success','📋'));"
+                      style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:#6b7280;font-size:0.68rem;padding:2px 7px;cursor:pointer;" title="Copy logs">⎘ Copy</button>
+                  </div>
+                </div>
+                <div id="rice2-console" class="console-box" style="flex: 1; min-height: 200px; max-height: 200px; background: #030712; padding: 12px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.75rem; color: #34d399; line-height: 1.4; white-space: pre-wrap; margin-bottom: 0;">
+                  <div style="color: #60a5fa;">[SYSTEM] RICE2 Console Ready. Waiting for inputs...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Execution Pipeline Stages & Dataset & Timing Info Grid -->
+          <div class="pipeline-grid"
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <!-- Left: Pipeline Checklist -->
+            <div class="glass-card progress-card" style="margin: 0;">
+              <h4 style="margin: 0 0 12px 0; color: var(--neon-cyan); font-size: 0.95rem; font-weight: 700;">⏳ Execution
+                Pipeline Stages</h4>
+              <div class="checklist-item" id="r2-item-load"><span class="check-icon">⏳</span> Loading Image & Bands
+              </div>
+              <div class="checklist-item" id="r2-item-unet"><span class="check-icon">⏳</span> U-Net Cloud Segmentation
+              </div>
+              <div class="checklist-item" id="r2-item-light"><span class="check-icon">⏳</span> Atmospheric Scattering
+                Estimation</div>
+              <div class="checklist-item" id="r2-item-dip"><span class="check-icon">⏳</span> DIP Prior Convergence</div>
+              <div class="checklist-item" id="r2-item-pinn"><span class="check-icon">⏳</span> PINN Physics Optimization
+              </div>
+              <div class="checklist-item" id="r2-item-captum"><span class="check-icon">⏳</span> Generating Captum
+                attributions</div>
+            </div>
+
+            <!-- Right: Timing Info -->
+            <div class="glass-card time-card" style="margin: 0; padding: 18px; background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); backdrop-filter: blur(12px);">
+              <h4 style="margin: 0 0 14px 0; color: #38bdf8; font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                <span>💾</span> Dataset & Processing Info
+              </h4>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; font-size: 0.78rem;">
+                <div style="background: rgba(30, 41, 59, 0.6); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                  <span style="color: var(--text-muted); display: block; font-size: 0.65rem; text-transform: uppercase;">Dataset / Sample</span>
+                  <strong id="r2-info-sample" style="color: #34d399; font-size: 0.85rem;">RICE2 · #0</strong>
+                </div>
+                <div style="background: rgba(30, 41, 59, 0.6); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                  <span style="color: var(--text-muted); display: block; font-size: 0.65rem; text-transform: uppercase;">Resolution / Bands</span>
+                  <strong id="r2-info-res" style="color: #38bdf8; font-size: 0.85rem;">512×512 · RGB</strong>
+                </div>
+                <div style="background: rgba(30, 41, 59, 0.6); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                  <span style="color: var(--text-muted); display: block; font-size: 0.65rem; text-transform: uppercase;">Mask Source</span>
+                  <strong id="r2-info-mask-source" style="color: #fbbf24; font-size: 0.85rem;">Predicted (U-Net)</strong>
+                </div>
+                <div style="background: rgba(30, 41, 59, 0.6); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                  <span style="color: var(--text-muted); display: block; font-size: 0.65rem; text-transform: uppercase;">Cloud Coverage</span>
+                  <strong id="r2-info-coverage" style="color: #c084fc; font-size: 0.85rem;">—</strong>
+                </div>
+              </div>
+
+              <div style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px;">
+                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                  Processing Timeline
+                </div>
+                <div class="time-row" style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.8rem;">
+                  <span style="color: var(--text-muted);">U-Net Segmenter</span><strong id="r2-time-unet" style="color: #38bdf8;">—</strong>
+                </div>
+                <div class="time-row" style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.8rem;">
+                  <span style="color: var(--text-muted);">DIP Prior Optimization</span><strong id="r2-time-dip" style="color: #fbbf24;">—</strong>
+                </div>
+                <div class="time-row" style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.8rem;">
+                  <span style="color: var(--text-muted);">PINN Physics Optimization</span><strong id="r2-time-pinn" style="color: #c084fc;">—</strong>
+                </div>
+                <div class="time-row" style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.8rem;">
+                  <span style="color: var(--text-muted);">Captum Attributions</span><strong id="r2-time-captum" style="color: #f472b6;">—</strong>
+                </div>
+                <div class="time-row" style="display: flex; justify-content: space-between; padding: 6px 0 0 0; font-weight: 700; font-size: 0.85rem;">
+                  <span style="color: var(--text-primary);">Total Execution Time</span><strong id="r2-time-total" style="color: #34d399;">—</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4-Card Image Grid -->
+          <div class="img-grid img-grid--4"
+            style="margin-bottom: 24px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+            <div class="img-card" title="☁️ Cloudy Input Image&#10;• How it is generated: Real Sentinel-2 / RICE2 satellite capture with thin/thick cloud contamination.&#10;• Physical model: I(x) = J(x)·t(x) + A(1 - t(x))&#10;• Scale: RGB Reflectance normalized [0, 255] integer display (float [0.0, 1.0])." style="cursor:help;">
+              <div class="img-card__head">
+                <h3>☁️ Cloudy Input ℹ️</h3>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <button class="btn btn--secondary" onclick="document.getElementById('rice2-custom-file')?.click();" style="padding: 2px 8px; font-size: 0.7rem; border-color: rgba(56, 189, 248, 0.4); color: var(--neon-cyan); height: 24px; display: inline-flex; align-items: center; gap: 3px;" title="Upload custom cloudy image">📤 New Input</button>
+                  <span class="chip chip--blue" id="rice2-name-badge">#0</span>
+                </div>
+              </div>
+              <div class="img-card__body">
+                <img id="rice2-cloudy-img" alt="RICE2 Cloudy Input Image"
+                  style="width:100%; aspect-ratio:1/1; object-fit:cover; border-radius: var(--r-md);" />
+                <div class="img-placeholder" id="ph-rice2-cloudy">Loading sample…</div>
+              </div>
+            </div>
+
+            <div class="img-card" title="🧠 U-Net Deep Learning Cloud Mask&#10;• How it is generated: CloudSegmentationUNet neural network inference (Sigmoid output).&#10;• Formula: M(x,y) = σ(W_conv * I + b) ∈ [0.0, 1.0]&#10;• Scale: Binary / Probability [0.0 = Clear Land, 1.0 = Cloud Region]." style="cursor:help;">
+              <div class="img-card__head">
+                <h3>🧠 U-Net DL Mask ℹ️</h3>
+                <span class="chip chip--purple" id="rice2-ratio-badge">U-Net Mask</span>
+              </div>
+              <div class="img-card__body">
+                <img id="rice2-mask-img" alt="U-Net Predicted Mask"
+                  style="width:100%; aspect-ratio:1/1; object-fit:cover; border-radius: var(--r-md);" />
+                <div class="img-placeholder" id="ph-rice2-mask">Loading U-Net mask…</div>
+              </div>
+            </div>
+
+            <div class="img-card" title="✨ DIP+PINN Physics Restored Output&#10;• How it is generated: Deep Image Prior CNN (f_θ(z)) optimized with Atmospheric Scattering Model (ASM) & RTE constraints.&#10;• Formula: J* = argmin [ L_ASM + λ_RTE·L_RTE + λ_NDVI·L_NDVI + λ_TV·L_TV ]&#10;• Scale: Surface Reflectance [0, 255] (float [0.0, 1.0])." style="cursor:help;">
+              <div class="img-card__head">
+                <h3>✨ DIP+PINN Restored ℹ️</h3>
+                <span class="chip chip--default" id="rice2-restored-badge">Physics Restored</span>
+              </div>
+              <div class="img-card__body">
+                <img id="rice2-restored-img" alt="DIP+PINN Restored Output"
+                  style="width:100%; aspect-ratio:1/1; object-fit:cover; border-radius: var(--r-md);" />
+                <div class="img-placeholder" id="ph-rice2-restored">Click 'Run DIP Cloud Removal'</div>
+              </div>
+            </div>
+
+            <div class="img-card" title="🎯 Ground-Truth Label (Clear Optical Reference)&#10;• How it is generated: Cloud-free Sentinel-2 reference scene captured on clear atmospheric day.&#10;• Purpose: Gold-standard target used to evaluate PSNR, SSIM, and spectral reconstruction accuracy.&#10;• Scale: True Surface Reflectance [0, 255] (float [0.0, 1.0])." style="cursor:help;">
+              <div class="img-card__head">
+                <h3>🎯 Ground-Truth Label ℹ️</h3>
+                <span class="chip chip--green">Ground Truth</span>
+              </div>
+              <div class="img-card__body">
+                <img id="rice2-label-img" alt="Ground Truth Label"
+                  style="width:100%; aspect-ratio:1/1; object-fit:cover; border-radius: var(--r-md);" />
+                <div class="img-placeholder" id="ph-rice2-label">Loading label…</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Metrics Bar -->
+          <div class="glass-card" style="margin-bottom: 24px;">
+            <h3 style="margin-bottom: 12px;">📊 Reconstruction Metrics (DIP+PINN Physics vs Ground Truth)</h3>
+            <div
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; text-align: center;">
+              <div class="kpi-card" style="padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;" title="What: Peak Signal-to-Noise Ratio.&#10;Why: Measures pixel-level fidelity vs ground truth.&#10;Range: 0 to ∞ (Higher is better, >30 dB is excellent).">
+                <span class="text-muted" style="font-size: 11px; cursor:help;">PSNR (dB) ℹ️</span>
+                <div id="rice2-met-psnr"
+                  style="font-size: 1.25rem; font-weight: 700; color: var(--neon-cyan); margin-top: 4px;">—</div>
+              </div>
+              <div class="kpi-card" style="padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;" title="What: Structural Similarity Index.&#10;Why: Measures structural preservation (edges, shapes) which aligns better with human perception.&#10;Range: 0 to 1 (Closer to 1 is better).">
+                <span class="text-muted" style="font-size: 11px; cursor:help;">SSIM ℹ️</span>
+                <div id="rice2-met-ssim" style="font-size: 1.25rem; font-weight: 700; color: #8b5cf6; margin-top: 4px;">
+                  —</div>
+              </div>
+              <div class="kpi-card" style="padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;" title="What: Spectral Angle Mapper.&#10;Why: Measures color/spectral shift. Crucial for remote sensing.&#10;Range: 0 to π radians (Lower is better).">
+                <span class="text-muted" style="font-size: 11px; cursor:help;">SAM ℹ️</span>
+                <div id="rice2-met-sam" style="font-size: 1.25rem; font-weight: 700; color: #3de6a8; margin-top: 4px;">—
+                </div>
+              </div>
+              <div class="kpi-card" style="padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;" title="What: Segmentation overlap metrics.&#10;Why: Checks how accurately the cloud mask was predicted.&#10;Range: 0 to 1 (1 is perfect overlap).">
+                <span class="text-muted" style="font-size: 11px; cursor:help;">Dice Score ℹ️</span>
+                <div id="rice2-met-dice" style="font-size: 1.25rem; font-weight: 700; color: #f5a623; margin-top: 4px;">
+                  —</div>
+              </div>
+              <div class="kpi-card" style="padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;" title="What: Intersection over Union.&#10;Why: Ratio of overlap between detected mask and true mask.&#10;Range: 0 to 1 (1 is perfect overlap).">
+                <span class="text-muted" style="font-size: 11px; cursor:help;">IoU (Jaccard) ℹ️</span>
+                <div id="rice2-met-iou" style="font-size: 1.25rem; font-weight: 700; color: #ec4899; margin-top: 4px;">—
+                </div>
+              </div>
+              <div class="kpi-card" style="padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;" title="What: Physical Realism Score.&#10;Why: Measures how well the reconstructed image conforms to physical scattering laws.&#10;Range: 0 to ∞ (Lower error is better).">
+                <span class="text-muted" style="font-size: 11px; cursor:help;">PRS Error ℹ️</span>
+                <div id="rice2-met-prs" style="font-size: 1.25rem; font-weight: 700; color: #06b6d4; margin-top: 4px;">—
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Real-Time Full Pipeline Diagnostic Flow -->
+          <div class="glass-card" style="margin-top: 24px;">
+            <h3>🔬 Real-Time Full Pipeline Diagnostic Flow (RICE2)</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4" style="margin-top: 16px;">
+              <!-- 1. Cloudy Input -->
+              <div class="flex flex-col items-center" title="1. Cloudy Input&#10;• Direct satellite capture with cloud scattering.&#10;• Formula: I = J·t + A(1 - t)&#10;• Scale: [0, 255] RGB display" style="cursor:help;">
+                <span class="text-sm font-bold text-slate-300 mb-2">1. Cloudy Input ℹ️</span>
+                <div class="relative bg-slate-900 border border-white/10 rounded-xl aspect-square w-full flex items-center justify-center overflow-hidden">
+                  <img id="rice2-realtime-input" class="w-full h-full object-cover hidden" alt="Cloudy Input" />
+                  <div class="text-xs text-slate-500 animate-pulse" id="ph-rice2-realtime-input">Awaiting input...</div>
+                </div>
+              </div>
+              
+              <!-- 2. Cloud Mask -->
+              <div class="flex flex-col items-center" title="2. Cloud Mask&#10;• Segmentation probability map of cloud coverage.&#10;• Formula: M(x,y) ∈ [0, 1]&#10;• Scale: 0 (Clear) to 1 (Thick Cloud)" style="cursor:help;">
+                <span class="text-sm font-bold text-rose-500 mb-2">2. Cloud Mask ℹ️</span>
+                <div class="relative bg-slate-900 border border-white/10 rounded-xl aspect-square w-full flex items-center justify-center overflow-hidden">
+                  <img id="rice2-realtime-mask" class="w-full h-full object-cover hidden" alt="Cloud Mask" />
+                  <div class="text-xs text-slate-500 animate-pulse" id="ph-rice2-realtime-mask">Awaiting mask...</div>
+                </div>
+              </div>
+
+              <!-- 3. Restored Output -->
+              <div class="flex flex-col items-center" title="3. Restored Output&#10;• Physics-informed deep reconstructed reflectance.&#10;• Formula: J = f_θ(z)&#10;• Scale: [0, 255] RGB reflectance" style="cursor:help;">
+                <span class="text-sm font-bold text-slate-300 mb-2">3. Restored Output ℹ️</span>
+                <div class="relative bg-slate-900 border border-white/10 rounded-xl aspect-square w-full flex items-center justify-center overflow-hidden">
+                  <img id="rice2-realtime-restored" class="w-full h-full object-cover hidden" alt="Restored Output" />
+                  <div class="text-xs text-slate-500 animate-pulse" id="ph-rice2-realtime-restored">Awaiting restoration...</div>
+                </div>
+              </div>
+
+              <!-- 4. Transmission Map -->
+              <div class="flex flex-col items-center" title="4. Atmospheric Transmission Map&#10;• Direct fraction of light reaching the satellite sensor through atmosphere.&#10;• Formula: t(x,y) = e^(-β·d(x,y)) ∈ [0.1, 1.0]&#10;• Scale: 0 (Thick cloud / 0% light) to 255 (Clear air / 100% transmission)" style="cursor:help;">
+                <span class="text-sm font-bold text-green-400 mb-2">4. Transmission Map ℹ️</span>
+                <div class="relative bg-slate-900 border border-white/10 rounded-xl aspect-square w-full flex items-center justify-center overflow-hidden">
+                  <img id="rice2-realtime-transmission" class="w-full h-full object-cover hidden" alt="Transmission Map" />
+                  <div class="text-xs text-slate-500 animate-pulse" id="ph-rice2-realtime-transmission">Awaiting transmission...</div>
+                </div>
+              </div>
+
+              <!-- 5. Difference Map -->
+              <div class="flex flex-col items-center" title="5. Difference / Error Map&#10;• Mean absolute channel difference between clean reference & restored output.&#10;• Formula: E(x,y) = 1/3 Σ |I_GT(x,y) - J(x,y)|&#10;• Scale: 0 (Pure Black = Perfect Match) to 255 (Bright White = High Deviation)" style="cursor:help;">
+                <span class="text-sm font-bold text-red-400 mb-2">5. Difference Map ℹ️</span>
+                <div class="relative bg-slate-900 border border-white/10 rounded-xl aspect-square w-full flex items-center justify-center overflow-hidden">
+                  <img id="rice2-realtime-difference" class="w-full h-full object-cover hidden" alt="Difference Map" />
+                  <div class="text-xs text-slate-500 animate-pulse" id="ph-rice2-realtime-difference">Awaiting difference...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Internal Activation & Diagnostic Maps -->
+          <div class="glass-card" style="margin-top: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+              <h3 style="margin: 0;">🧬 Internal Activation & Diagnostic Maps <span style="font-size:0.9rem; color:var(--text-muted); font-weight:normal;">(DIP-PINN on RICE2)</span></h3>
+              <button id="btn-download-r2-activation-grid" type="button" onclick="downloadActivationMapsGrid('RICE2')" class="btn" style="background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(188, 52, 250, 0.3)); border: 1px solid var(--neon-cyan); color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
+                💾 <span>Save Full Diagnostics (1 Image)</span>
+              </button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+              
+              <!-- Card 1: Early Layer -->
+              <div class="glass-card" style="padding: 15px;">
+                <h3 style="color:var(--neon-cyan); margin-bottom: 10px; font-size:1rem;">1. Early-layer activation maps <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Low-level features)</span></h3>
+                <div style="display:flex; gap:12px;">
+                  <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
+                    <div style="font-size:0.75rem; color:var(--text-secondary);">
+                      <div style="margin-bottom:6px;">Early Layer (Conv1)<br><span style="font-size:0.65rem; color:var(--text-muted);">Shape: [1, 32, 256, 256]</span></div>
+                      <ul style="padding-left:15px; margin:0; line-height:1.4;">
+                        <li>Edges</li>
+                        <li>Fine textures</li>
+                        <li>Thin-cloud patterns</li>
+                        <li>Intensity transitions</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div style="flex:1.2; display:flex; flex-direction:column;">
+                    <div style="aspect-ratio:1; background:rgba(0,0,0,0.4); border-radius:4px; border:1px solid rgba(255,255,255,0.1); position:relative; overflow:hidden;">
+                      <img id="r2page-map-grid-early" alt="Early Layer" style="width:100%; height:100%; object-fit:cover; display:none;" />
+                      <div id="ph-r2page-map-grid-early" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:var(--text-muted);">Awaiting...</div>
+                    </div>
+                    <div style="margin-top:8px; height:8px; width:100%; background:linear-gradient(90deg, #1e1e30, #2dd4bf); border-radius:4px; position:relative; overflow:visible; box-shadow:inset 0 1px 2px rgba(0,0,0,0.5);">
+                      <div class="colorbar-pulse-shimmer"></div>
+                      <div id="r2pin-early" style="position:absolute; top:-3px; left:0%; transform:translateX(-50%); width:6px; height:14px; background:#fff; border-radius:3px; box-shadow:0 0 8px #2dd4bf, 0 0 2px #fff; transition:left 0.6s cubic-bezier(0.4, 0, 0.2, 1); z-index:2;"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.6rem; color:var(--text-muted); margin-top:4px;">
+                      <span>Low Activation</span>
+                      <span style="color:#2dd4bf; font-weight:700; font-family:monospace;" id="r2val-early">0.0%</span>
+                      <span>High Activation</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 2: Middle Layer -->
+              <div class="glass-card" style="padding: 15px;">
+                <h3 style="color:var(--neon-green); margin-bottom: 10px; font-size:1rem;">2. Middle-layer activation maps <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Structural features)</span></h3>
+                <div style="display:flex; gap:12px;">
+                  <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
+                    <div style="font-size:0.75rem; color:var(--text-secondary);">
+                      <div style="margin-bottom:6px;">Middle Layer (Conv-block 4)<br><span style="font-size:0.65rem; color:var(--text-muted);">Shape: [1, 64, 128, 128]</span></div>
+                      <ul style="padding-left:15px; margin:0; line-height:1.4;">
+                        <li>Roads & buildings</li>
+                        <li>River boundaries</li>
+                        <li>Vegetation regions</li>
+                        <li>Cloud vs. ground distinction</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div style="flex:1.2; display:flex; flex-direction:column;">
+                    <div style="aspect-ratio:1; background:rgba(0,0,0,0.4); border-radius:4px; border:1px solid rgba(255,255,255,0.1); position:relative; overflow:hidden;">
+                      <img id="r2page-map-grid-middle" alt="Middle Layer" style="width:100%; height:100%; object-fit:cover; display:none;" />
+                      <div id="ph-r2page-map-grid-middle" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:var(--text-muted);">Awaiting...</div>
+                    </div>
+                    <div style="margin-top:8px; height:8px; width:100%; background:linear-gradient(90deg, #1e1e30, #a3e635); border-radius:4px; position:relative; overflow:visible; box-shadow:inset 0 1px 2px rgba(0,0,0,0.5);">
+                      <div class="colorbar-pulse-shimmer"></div>
+                      <div id="r2pin-middle" style="position:absolute; top:-3px; left:0%; transform:translateX(-50%); width:6px; height:14px; background:#fff; border-radius:3px; box-shadow:0 0 8px #a3e635, 0 0 2px #fff; transition:left 0.6s cubic-bezier(0.4, 0, 0.2, 1); z-index:2;"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.6rem; color:var(--text-muted); margin-top:4px;">
+                      <span>Low Activation</span>
+                      <span style="color:#a3e635; font-weight:700; font-family:monospace;" id="r2val-middle">0.0%</span>
+                      <span>High Activation</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 3: Deep Layer -->
+              <div class="glass-card" style="padding: 15px;">
+                <h3 style="color:var(--neon-orange); margin-bottom: 10px; font-size:1rem;">3. Deep / Decoder activation maps <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Reconstruction features)</span></h3>
+                <div style="display:flex; gap:12px;">
+                  <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
+                    <div style="font-size:0.75rem; color:var(--text-secondary);">
+                      <div style="margin-bottom:6px;">Decoder Layer (Up-block 3)<br><span style="font-size:0.65rem; color:var(--text-muted);">Shape: [1, 64, 128, 128]</span></div>
+                      <ul style="padding-left:15px; margin:0; line-height:1.4;">
+                        <li>High-level semantics</li>
+                        <li>Structure restoration cues</li>
+                        <li>Object shapes</li>
+                        <li>Texture reconstruction</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div style="flex:1.2; display:flex; flex-direction:column;">
+                    <div style="aspect-ratio:1; background:rgba(0,0,0,0.4); border-radius:4px; border:1px solid rgba(255,255,255,0.1); position:relative; overflow:hidden;">
+                      <img id="r2page-map-grid-deep" alt="Deep Layer" style="width:100%; height:100%; object-fit:cover; display:none;" />
+                      <div id="ph-r2page-map-grid-deep" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:var(--text-muted);">Awaiting...</div>
+                    </div>
+                    <div style="margin-top:8px; height:8px; width:100%; background:linear-gradient(90deg, #1e1e30, #fbbf24); border-radius:4px; position:relative; overflow:visible; box-shadow:inset 0 1px 2px rgba(0,0,0,0.5);">
+                      <div class="colorbar-pulse-shimmer"></div>
+                      <div id="r2pin-deep" style="position:absolute; top:-3px; left:0%; transform:translateX(-50%); width:6px; height:14px; background:#fff; border-radius:3px; box-shadow:0 0 8px #fbbf24, 0 0 2px #fff; transition:left 0.6s cubic-bezier(0.4, 0, 0.2, 1); z-index:2;"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.6rem; color:var(--text-muted); margin-top:4px;">
+                      <span>Low Activation</span>
+                      <span style="color:#fbbf24; font-weight:700; font-family:monospace;" id="r2val-deep">0.0%</span>
+                      <span>High Activation</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 4: Magnitude -->
+              <div class="glass-card" style="padding: 15px;">
+                <h3 style="color:var(--neon-purple); margin-bottom: 10px; font-size:1rem;">4. Activation magnitude / mean map <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Overall activation)</span></h3>
+                <div style="display:flex; gap:12px;">
+                  <div style="flex:1; display:flex; flex-direction:column; justify-content: space-between;">
+                    <div style="font-size:0.75rem; color:var(--text-secondary);">
+                      <div style="margin-bottom:6px;">Mean Activation<br>(Across all channels)<br><span style="font-size:0.65rem; color:var(--text-muted);">Shape: [1, 1, 256, 256]</span></div>
+                      <ul style="padding-left:15px; margin:0; line-height:1.4; margin-bottom: 15px;">
+                        <li>Overall activation strength</li>
+                        <li>Where the model focuses more</li>
+                        <li>Highlights important regions</li>
+                      </ul>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px; font-family: monospace; font-size: 0.65rem; color: #a5b4fc; border: 1px solid rgba(255,255,255,0.1);">
+                      A<sub>mean</sub>(x,y) = 1/N Σ |A<sub>c</sub>(x,y)|<br>
+                      <span style="font-size: 0.55rem; color: var(--text-muted);">(N = number of channels)</span>
+                    </div>
+                  </div>
+                  <div style="flex:1.2; display:flex; flex-direction:column;">
+                    <div style="aspect-ratio:1; background:rgba(0,0,0,0.4); border-radius:4px; border:1px solid rgba(255,255,255,0.1); position:relative; overflow:hidden;">
+                      <img id="r2page-map-grid-magnitude" alt="Magnitude Layer" style="width:100%; height:100%; object-fit:cover; display:none;" />
+                      <div id="ph-r2page-map-grid-magnitude" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:var(--text-muted);">Awaiting...</div>
+                    </div>
+                    <div style="margin-top:8px; height:8px; width:100%; background:linear-gradient(90deg, #1e1e30, #c084fc, #fb923c); border-radius:4px; position:relative; overflow:visible; box-shadow:inset 0 1px 2px rgba(0,0,0,0.5);">
+                      <div class="colorbar-pulse-shimmer"></div>
+                      <div id="r2pin-magnitude" style="position:absolute; top:-3px; left:0%; transform:translateX(-50%); width:6px; height:14px; background:#fff; border-radius:3px; box-shadow:0 0 8px #c084fc, 0 0 2px #fff; transition:left 0.6s cubic-bezier(0.4, 0, 0.2, 1); z-index:2;"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.6rem; color:var(--text-muted); margin-top:4px;">
+                      <span>Low</span>
+                      <span style="color:#c084fc; font-weight:700; font-family:monospace;" id="r2val-magnitude">0.0%</span>
+                      <span>High</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 5: Error -->
+              <div class="glass-card" style="padding: 15px;">
+                <h3 style="color:var(--neon-cyan); margin-bottom: 10px; font-size:1rem;">5. Reconstruction error map <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Restoration quality)</span></h3>
+                <div style="display:flex; gap:12px;">
+                  <div style="flex:1; display:flex; flex-direction:column; justify-content: space-between;">
+                    <div style="font-size:0.75rem; color:var(--text-secondary);">
+                      <div style="margin-bottom:6px;">Reconstruction Error<br><span style="font-size:0.65rem; color:var(--text-muted);">Shape: [1, 1, 256, 256]</span></div>
+                      <ul style="padding-left:15px; margin:0; line-height:1.4; margin-bottom: 15px;">
+                        <li>Low error (dark): good restoration</li>
+                        <li>High error (bright): poor restoration</li>
+                        <li>High values near clouds, edges, & structures</li>
+                      </ul>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px; font-family: monospace; font-size: 0.65rem; color: #a5b4fc; border: 1px solid rgba(255,255,255,0.1);">
+                      E(x,y) =<br>|I<sub>restored</sub>(x,y) - I<sub>target</sub>(x,y)|
+                    </div>
+                  </div>
+                  <div style="flex:1.2; display:flex; flex-direction:column;">
+                    <div style="aspect-ratio:1; background:rgba(0,0,0,0.4); border-radius:4px; border:1px solid rgba(255,255,255,0.1); position:relative; overflow:hidden;">
+                      <img id="r2page-map-grid-error" alt="Error Map" style="width:100%; height:100%; object-fit:cover; display:none;" />
+                      <div id="ph-r2page-map-grid-error" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:var(--text-muted);">Awaiting...</div>
+                    </div>
+                    <div style="margin-top:8px; height:8px; width:100%; background:linear-gradient(90deg, #1e1e30, #e879f9, #fde047); border-radius:4px; position:relative; overflow:visible; box-shadow:inset 0 1px 2px rgba(0,0,0,0.5);">
+                      <div class="colorbar-pulse-shimmer"></div>
+                      <div id="r2pin-error" style="position:absolute; top:-3px; left:0%; transform:translateX(-50%); width:6px; height:14px; background:#fff; border-radius:3px; box-shadow:0 0 8px #e879f9, 0 0 2px #fff; transition:left 0.6s cubic-bezier(0.4, 0, 0.2, 1); z-index:2;"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.6rem; color:var(--text-muted); margin-top:4px;">
+                      <span>Low Error</span>
+                      <span style="color:#e879f9; font-weight:700; font-family:monospace;" id="r2val-error">0.0%</span>
+                      <span>High Error</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 6: PINN Physics -->
+              <div class="glass-card" style="padding: 15px;">
+                <h3 style="color:#a3e635; margin-bottom: 10px; font-size:1rem;">6. PINN physics-residual map <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Physics consistency)</span></h3>
+                <div style="display:flex; gap:12px;">
+                  <div style="flex:1; display:flex; flex-direction:column; justify-content: space-between;">
+                    <div style="font-size:0.75rem; color:var(--text-secondary);">
+                      <div style="margin-bottom:6px;">PINN Residual<br><span style="font-size:0.65rem; color:var(--text-muted);">Shape: [1, 1, 256, 256]</span></div>
+                      <ul style="padding-left:15px; margin:0; line-height:1.4; margin-bottom: 15px;">
+                        <li>Residual ≈ 0 (dark): physics satisfied</li>
+                        <li>High residual (bright): physics violation</li>
+                        <li>Guides the model to obey physical constraints</li>
+                      </ul>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px; font-family: monospace; font-size: 0.65rem; color: #a5b4fc; border: 1px solid rgba(255,255,255,0.1);">
+                      R(x,y) = F(I, ∇I,<br>M<sub>cloud</sub>, ...)
+                    </div>
+                  </div>
+                  <div style="flex:1.2; display:flex; flex-direction:column;">
+                    <div style="aspect-ratio:1; background:rgba(0,0,0,0.4); border-radius:4px; border:1px solid rgba(255,255,255,0.1); position:relative; overflow:hidden;">
+                      <img id="r2page-map-grid-physics" alt="Physics Map" style="width:100%; height:100%; object-fit:cover; display:none;" />
+                      <div id="ph-r2page-map-grid-physics" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:var(--text-muted);">Awaiting...</div>
+                    </div>
+                    <div style="margin-top:8px; height:8px; width:100%; background:linear-gradient(90deg, #1e1e30, #f43f5e, #fef08a); border-radius:4px; position:relative; overflow:visible; box-shadow:inset 0 1px 2px rgba(0,0,0,0.5);">
+                      <div class="colorbar-pulse-shimmer"></div>
+                      <div id="r2pin-physics" style="position:absolute; top:-3px; left:0%; transform:translateX(-50%); width:6px; height:14px; background:#fff; border-radius:3px; box-shadow:0 0 8px #f43f5e, 0 0 2px #fff; transition:left 0.6s cubic-bezier(0.4, 0, 0.2, 1); z-index:2;"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.6rem; color:var(--text-muted); margin-top:4px;">
+                      <span>Physics Satisfied</span>
+                      <span style="color:#f43f5e; font-weight:700; font-family:monospace;" id="r2val-physics">0.0%</span>
+                      <span>Physics Violation</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image Quality Progression Chart -->
+          <div class="glass-card" style="margin-top: 24px;">
+            <h3>📈 Image Quality Progression (Real-time PSNR & SSIM)</h3>
+            <div style="position: relative; height: 250px; margin-top: 16px;">
+              <canvas id="rice2-quality-chart"></canvas>
+            </div>
+          </div>
+        </div>

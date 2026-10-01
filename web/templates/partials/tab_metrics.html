@@ -1,0 +1,297 @@
+<div class="tab-panel" id="tab-metrics">
+  <div class="methodology-container" style="display: flex; flex-direction: column; gap: 24px; padding: 10px;">
+
+    <!-- Hidden placeholders to preserve JS bindings safely -->
+    <div style="display: none;" aria-hidden="true">
+      <span id="metrics-source-label"></span>
+      <span id="metric-cloud-coverage"></span>
+      <span id="metric-psnr"></span>
+      <span id="metric-ssim"></span>
+      <span id="metric-sam"></span>
+      <span id="metric-prs"></span>
+      <span id="metric-dice"></span>
+      <span id="metric-iou"></span>
+      <span id="metric-asm-res"></span>
+    </div>
+
+    <!-- ═══ HEADER BANNER ═══════════════════════════════════════════════════ -->
+    <div class="glass-card"
+      style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(45, 212, 191, 0.35); border-radius: 14px; padding: 24px; position: relative; overflow: hidden;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <span style="font-size: 2rem;">📐</span>
+            <h2 style="font-size: 1.65rem; font-weight: 800; color: #2DD4BF; margin: 0;">
+              Evaluation Metrics & Mathematical Formulations Guide
+            </h2>
+          </div>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin: 0; max-width: 900px; line-height: 1.6;">
+            Detailed mathematical explanations, reasons, physical units, scaling laws, and visual graph interpretations for all image quality and physical consistency metrics (<strong>PSNR, SSIM, SAM, PRS, Dice, IoU</strong>) utilized in DIP-PINN remote sensing analysis.
+          </p>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <span class="chip chip--blue" style="font-size: 0.85rem; padding: 6px 14px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3);">Pixel & Spectral Fidelity</span>
+          <span class="chip chip--amber" style="font-size: 0.85rem; padding: 6px 14px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3);">Physics Consistency (No-Reference)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ 1. COMPREHENSIVE METRICS REFERENCE TABLE ════════════════════════ -->
+    <div class="glass-card" style="padding: 22px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+        <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px;">
+          <span>📊 Master Metrics Comparison & Interpretation Table</span>
+        </h3>
+        <span style="font-size: 0.85rem; color: #2DD4BF; font-weight: 600;">Reference Scale & Objective Goals</span>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.92rem;">
+          <thead>
+            <tr style="background: rgba(30, 41, 59, 0.7); border-bottom: 2px solid rgba(45, 212, 191, 0.4);">
+              <th style="padding: 12px 14px; color: #2DD4BF; font-weight: 700;">Metric Name</th>
+              <th style="padding: 12px 14px; color: #38BDF8; font-weight: 700;">Standard Scale / Range</th>
+              <th style="padding: 12px 14px; color: #F59E0B; font-weight: 700;">Target Goal</th>
+              <th style="padding: 12px 14px; color: var(--text-primary); font-weight: 700;">Mathematical Formula</th>
+              <th style="padding: 12px 14px; color: #A78BFA; font-weight: 700;">Why It Was Made (Remote Sensing Reason)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- PSNR -->
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(15, 23, 42, 0.4);">
+              <td style="padding: 12px 14px;">
+                <div style="font-weight: 700; color: #38BDF8; display: flex; align-items: center; gap: 6px;">
+                  <span>📡</span> PSNR
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Peak Signal-to-Noise Ratio</div>
+              </td>
+              <td style="padding: 12px 14px;">
+                <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-weight: 700;">0 to ∞ (dB)</span>
+                <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 3px;">Typical: 20 – 42 dB</div>
+              </td>
+              <td style="padding: 12px 14px;">
+                <span class="badge" style="background: rgba(34, 197, 94, 0.15); color: #22C55E; font-weight: 700;">Higher is Better (↑)</span>
+                <div style="font-size: 0.78rem; color: #34D399; margin-top: 3px;">&gt;32 dB = Excellent</div>
+              </td>
+              <td style="padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #E2E8F0;">
+                $10 \log_{10}\left(\frac{\mathrm{MAX}^2}{\mathrm{MSE}}\right)$
+              </td>
+              <td style="padding: 12px 14px; color: var(--text-muted); font-size: 0.88rem; line-height: 1.5;">
+                Measures absolute numeric reconstruction error at pixel level against ground truth clean radiance.
+              </td>
+            </tr>
+
+            <!-- SSIM -->
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(15, 23, 42, 0.2);">
+              <td style="padding: 12px 14px;">
+                <div style="font-weight: 700; color: #38BDF8; display: flex; align-items: center; gap: 6px;">
+                  <span>🔍</span> SSIM
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Structural Similarity Index</div>
+              </td>
+              <td style="padding: 12px 14px;">
+                <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-weight: 700;">-1.0 to 1.0 (Unitless)</span>
+                <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 3px;">Typical: 0.70 – 0.99</div>
+              </td>
+              <td style="padding: 12px 14px;">
+                <span class="badge" style="background: rgba(34, 197, 94, 0.15); color: #22C55E; font-weight: 700;">Higher is Better (↑)</span>
+                <div style="font-size: 0.78rem; color: #34D399; margin-top: 3px;">&gt;0.92 = High Structural Preservation</div>
+              </td>
+              <td style="padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: #E2E8F0;">
+                $\frac{(2\mu_x\mu_y+c_1)(2\sigma_{xy}+c_2)}{(\mu_x^2+\mu_y^2+c_1)(\sigma_x^2+\sigma_y^2+c_2)}$
+              </td>
+              <td style="padding: 12px 14px; color: var(--text-muted); font-size: 0.88rem; line-height: 1.5;">
+                Models human visual perception by comparing luminance, contrast, and edge structural texture independently of global brightness offsets.
+              </td>
+            </tr>
+
+            <!-- SAM -->
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(15, 23, 42, 0.4);">
+              <td style="padding: 12px 14px;">
+                <div style="font-weight: 700; color: #F59E0B; display: flex; align-items: center; gap: 6px;">
+                  <span>🌈</span> SAM
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Spectral Angle Mapper</div>
+              </td>
+              <td style="padding: 12px 14px;">
+                <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B; font-weight: 700;">0 to π Radians / Deg</span>
+                <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 3px;">Typical: 0.02 – 0.15 rad</div>
+              </td>
+              <td style="padding: 12px 14px;">
+                <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-weight: 700;">Lower is Better (↓)</span>
+                <div style="font-size: 0.78rem; color: #38BDF8; margin-top: 3px;">&lt;0.05 rad = Pure Spectrum</div>
+              </td>
+              <td style="padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #E2E8F0;">
+                $\arccos\left(\frac{\mathbf{x} \cdot \mathbf{y}}{\|\mathbf{x}\|_2 \|\mathbf{y}\|_2}\right)$
+              </td>
+              <td style="padding: 12px 14px; color: var(--text-muted); font-size: 0.88rem; line-height: 1.5;">
+                CRITICAL for satellite imagery: Evaluates spectral angle fidelity across multi-bands (RGB/NIR) without being fooled by illumination gain.
+              </td>
+            </tr>
+
+            <!-- PRS -->
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(15, 23, 42, 0.2);">
+              <td style="padding: 12px 14px;">
+                <div style="font-weight: 700; color: #A78BFA; display: flex; align-items: center; gap: 6px;">
+                  <span>⚛️</span> PRS
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Physical Realism Score (PINN)</div>
+              </td>
+              <td style="padding: 12px 14px;">
+                <span class="badge" style="background: rgba(167, 139, 250, 0.15); color: #A78BFA; font-weight: 700;">0 to 1.0 (Residual Error)</span>
+                <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 3px;">Typical: 0.01 – 0.10</div>
+              </td>
+              <td style="padding: 12px 14px;">
+                <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-weight: 700;">Lower is Better (↓)</span>
+                <div style="font-size: 0.78rem; color: #38BDF8; margin-top: 3px;">0 = Exact Physical Compliance</div>
+              </td>
+              <td style="padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: #E2E8F0;">
+                $\mathcal{L}_{\text{ASM}} + \beta \mathcal{L}_{\text{RTE}} + \gamma \mathcal{L}_{\text{NDVI}}$
+              </td>
+              <td style="padding: 12px 14px; color: var(--text-muted); font-size: 0.88rem; line-height: 1.5;">
+                <strong>No-Reference metric</strong>: Measures whether the output adheres to physical Atmospheric Scattering, Ångström multi-spectral RTE, and biological vegetation bounds without needing clear ground truth.
+              </td>
+            </tr>
+
+            <!-- Dice & IoU -->
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(15, 23, 42, 0.4);">
+              <td style="padding: 12px 14px;">
+                <div style="font-weight: 700; color: #2DD4BF; display: flex; align-items: center; gap: 6px;">
+                  <span>🎯</span> Dice &amp; IoU (Jaccard)
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Cloud Segmentation Overlap</div>
+              </td>
+              <td style="padding: 12px 14px;">
+                <span class="badge" style="background: rgba(45, 212, 191, 0.15); color: #2DD4BF; font-weight: 700;">0 to 1.0 (Unitless)</span>
+                <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 3px;">Target: 0.85 – 0.98</div>
+              </td>
+              <td style="padding: 12px 14px;">
+                <span class="badge" style="background: rgba(34, 197, 94, 0.15); color: #22C55E; font-weight: 700;">Higher is Better (↑)</span>
+                <div style="font-size: 0.78rem; color: #34D399; margin-top: 3px;">1.0 = Perfect Cloud Mask Match</div>
+              </td>
+              <td style="padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: #E2E8F0;">
+                $\text{Dice}=\frac{2|A \cap B|}{|A|+|B|}, \text{IoU}=\frac{|A \cap B|}{|A \cup B|}$
+              </td>
+              <td style="padding: 12px 14px; color: var(--text-muted); font-size: 0.88rem; line-height: 1.5;">
+                Quantifies accuracy of cloud boundary detection. High Dice ensures cloud is masked completely without falsely eroding bright building roofs or sandy terrain.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ 2. GRAPH INTERPRETATION & AXIS SPECIFICATIONS ═══════════════════ -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+      <!-- Graph 1: Optimization Convergence Curve -->
+      <div class="glass-card" style="border-top: 3px solid #38BDF8; padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <h4 style="color: #38BDF8; font-size: 1.15rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+            <span>📉 DIP-PINN Loss Convergence Curve</span>
+          </h4>
+          <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8;">Training Dynamics</span>
+        </div>
+
+        <div style="background: rgba(10, 15, 28, 0.75); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; margin-bottom: 14px;">
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px;">
+              <strong style="color: #2DD4BF;">X-Axis:</strong>
+              <span style="color: #E2E8F0;">Optimization Iterations (Steps: <code>0 → 500 / 1000</code>)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px;">
+              <strong style="color: #2DD4BF;">Y-Axis:</strong>
+              <span style="color: #E2E8F0;">Composite Loss Value $\mathcal{L}_{\text{total}}$ (Logarithmic / Linear scale)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <strong style="color: #2DD4BF;">Line Traces:</strong>
+              <span style="color: #94A3B8;">$\mathcal{L}_{\text{data}}$ (Reconstruction), $\mathcal{L}_{\text{ASM}}$, $\mathcal{L}_{\text{RTE}}$, $\mathcal{L}_{\text{TV}}$</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">
+          <strong style="color: #F8FAFC;">How to read this graph:</strong>
+          <ul style="margin: 6px 0 0 0; padding-left: 20px;">
+            <li><strong>Initial Drop (Steps 0–100):</strong> Steep descent as the network quickly captures low-frequency image radiance and color channels.</li>
+            <li><strong>Physics Stabilization (Steps 100–350):</strong> ASM and RTE physics terms penalize unnatural haze while preserving natural ground textures.</li>
+            <li><strong>Ideal Stop Point:</strong> When total loss flattens without TV loss exploding (prevents neural over-fitting).</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Graph 2: Metrics Evolution vs Iterations -->
+      <div class="glass-card" style="border-top: 3px solid #F59E0B; padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <h4 style="color: #F59E0B; font-size: 1.15rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+            <span>📈 Quality Progression Graph (PSNR / SSIM / SAM)</span>
+          </h4>
+          <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B;">Reconstruction Quality</span>
+        </div>
+
+        <div style="background: rgba(10, 15, 28, 0.75); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; margin-bottom: 14px;">
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px;">
+              <strong style="color: #2DD4BF;">X-Axis:</strong>
+              <span style="color: #E2E8F0;">Iteration Checkpoint / Epoch number (<code>0 → 500</code>)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px;">
+              <strong style="color: #2DD4BF;">Primary Y-Axis (Left):</strong>
+              <span style="color: #38BDF8;">PSNR in Decibels (dB, range: <code>15 dB → 38 dB</code>)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <strong style="color: #2DD4BF;">Secondary Y-Axis (Right):</strong>
+              <span style="color: #F59E0B;">SSIM Index (<code>0.0 → 1.0</code>) and SAM (rad)</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.6;">
+          <strong style="color: #F8FAFC;">How to read this graph:</strong>
+          <ul style="margin: 6px 0 0 0; padding-left: 20px;">
+            <li><strong>PSNR Rise (Cyan Curve):</strong> Ascends steadily as haze is subtracted and ground true radiance is recovered.</li>
+            <li><strong>SSIM Plateau (Amber Curve):</strong> Reaches ~0.90+ as edge contours, river borders, and crop field boundaries sharpen.</li>
+            <li><strong>SAM Drop (Purple Curve):</strong> Decreases towards 0 rad, verifying zero chromatic distortion in vegetation indices.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══ 3. DEEP DIVE: WHY WERE THESE METRICS CREATED? ═══════════════════ -->
+    <div class="glass-card" style="padding: 22px;">
+      <h3 style="font-size: 1.25rem; font-weight: 700; color: #2DD4BF; margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
+        <span>💡 Deep Dive: Purpose & Science Behind Remote Sensing Metrics</span>
+      </h3>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+        
+        <!-- Deep Dive 1: SAM -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 16px;">
+          <h5 style="color: #F59E0B; margin: 0 0 8px 0; font-size: 1rem; font-weight: 700;">🌈 Why Spectral Angle Mapper (SAM) is essential:</h5>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.55; margin: 0;">
+            In remote sensing (Sentinel-2), two pixels can have different brightness because of shadows or terrain slope, but they represent the same material if their <em>spectral direction</em> is identical. Standard MSE penalizes illumination differences, whereas SAM measures purely the <strong>spectral vector angle</strong> ($\theta$). A lower SAM guarantees that crop signatures and water bodies maintain true spectral signatures.
+          </p>
+        </div>
+
+        <!-- Deep Dive 2: PRS -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 16px;">
+          <h5 style="color: #A78BFA; margin: 0 0 8px 0; font-size: 1rem; font-weight: 700;">⚛️ Why Physical Realism Score (PRS) is groundbreaking:</h5>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.55; margin: 0;">
+            Real-world satellite passes rarely have cloud-free ground truth taken at the exact same hour. Traditional metrics (PSNR, SSIM) fail when no ground truth is available. <strong>PRS enables No-Reference evaluation</strong> by testing whether the dehazed image mathematically satisfies radiative transfer equations and physical atmospheric attenuation profiles.
+          </p>
+        </div>
+
+        <!-- Deep Dive 3: Mask Overlap (Dice / IoU) -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 16px;">
+          <h5 style="color: #38BDF8; margin: 0 0 8px 0; font-size: 1rem; font-weight: 700;">🎯 Why Cloud Dice / IoU is critical for Inpainting:</h5>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.55; margin: 0;">
+            In RICE-2 (thick cloud), unmasked cloud edges leave bright halo artifacts, while over-segmentation destroys valid ground data. High Dice score confirms that the Deep Image Prior inpainting is applied strictly and exclusively where optical transmittance $t(x) \approx 0$.
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

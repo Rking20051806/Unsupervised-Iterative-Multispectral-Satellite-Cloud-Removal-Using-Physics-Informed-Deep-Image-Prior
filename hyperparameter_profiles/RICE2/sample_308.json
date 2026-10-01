@@ -1,0 +1,64 @@
+{
+  "dataset_type": "RICE-2 (Thick Cumulus / Heavy Cloud & Inpainting)",
+  "physical_mechanism": "Masked DIP Inpainting on Cloud Mask M + Boundary Gradient Continuity",
+  "image_properties": {
+    "resolution": "512x512",
+    "mean_luminance": 0.6336,
+    "std_luminance": 0.0288,
+    "max_luminance": 0.7142,
+    "estimated_cloud_coverage_pct": 79.57,
+    "dark_channel_mean": 0.5469,
+    "estimated_mean_transmission": 0.4804,
+    "estimated_min_transmission": 0.4263,
+    "gradient_energy": 0.0032,
+    "spectral_scattering_ratio": 0.8276
+  },
+  "optimal_hyperparameters": {
+    "lambda_asm": {
+      "min_safe": 0.0455,
+      "max_safe": 0.1138,
+      "best": 0.0759
+    },
+    "lambda_rte": {
+      "min_safe": 0.0198,
+      "max_safe": 0.0495,
+      "best": 0.033
+    },
+    "noise_std": {
+      "min_safe": 0.0182,
+      "max_safe": 0.0364,
+      "best": 0.026
+    },
+    "lambda_tv": {
+      "min_safe": 1e-05,
+      "max_safe": 6e-05,
+      "best": 2.4e-05
+    },
+    "lambda_ndvi": {
+      "min_safe": 0.0265,
+      "max_safe": 0.0706,
+      "best": 0.0441
+    },
+    "lambda_t_prior": {
+      "min_safe": 0.646,
+      "max_safe": 1.615,
+      "best": 1.077
+    },
+    "learning_rate": {
+      "min_safe": 0.0015,
+      "max_safe": 0.005,
+      "best": 0.003
+    },
+    "iterations": {
+      "fast_preview": 100,
+      "recommended_balanced": 250,
+      "high_precision": 500,
+      "full_convergence": 2500
+    }
+  },
+  "sample_info": {
+    "dataset": "RICE2",
+    "sample_id": "308",
+    "filename": "308.png"
+  }
+}

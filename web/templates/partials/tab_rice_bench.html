@@ -1,0 +1,137 @@
+<div class="tab-panel" id="tab-rice-bench">
+          <div class="bench-layout">
+            <!-- Left: Controls + preview -->
+            <div class="bench-left">
+              <div class="bench-controls glass-card">
+                <h3>🔬 Benchmark Controls</h3>
+                <div class="bench-fields">
+                  <div>
+                    <label class="field-label">Dataset</label>
+                    <select id="bench-split" class="glass-select">
+                      <option value="RICE1">RICE1 (with ground truth)</option>
+                      <option value="RICE2">RICE2 (with mask)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="field-label">Sample #</label>
+                    <input type="number" id="bench-index" class="glass-input" min="0" value="0" />
+                  </div>
+                  <div>
+                    <label class="field-label">Sensitivity</label>
+                    <input type="range" id="bench-sensitivity" class="slider" min="0.3" max="1.0" step="0.05"
+                      value="0.75" />
+                    <span id="bench-sensitivity-val" class="text-muted">0.75</span>
+                  </div>
+                </div>
+                <button class="btn btn--primary" id="bench-run-btn" style="width:100%;margin-top:14px;">▶ Run DIP+PINN
+                  Benchmark</button>
+              </div>
+
+              <!-- RICE sample preview -->
+              <div class="glass-card" id="bench-preview-card">
+                <div class="img-card__head" style="margin-bottom:12px;">
+                  <h3>Sample Preview</h3>
+                  <span class="chip chip--blue" id="bench-sample-name">—</span>
+                </div>
+                <div class="bench-preview-grid">
+                  <div>
+                    <p class="text-muted" style="font-size:0.8rem;margin:0 0 6px;">Cloudy</p>
+                    <img id="bench-cloudy-img" class="bench-thumb" alt="Cloudy" />
+                  </div>
+                  <div>
+                    <p class="text-muted" style="font-size:0.8rem;margin:0 0 6px;">Ground Truth</p>
+                    <img id="bench-label-img" class="bench-thumb" alt="Label" />
+                  </div>
+                  <div>
+                    <p class="text-muted" style="font-size:0.8rem;margin:0 0 6px;">Mask</p>
+                    <img id="bench-mask-img" class="bench-thumb" alt="Mask" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Metrics results -->
+            <div class="bench-right">
+              <div class="glass-card">
+                <h3>📊 Full Metrics Report</h3>
+                <div class="bench-status-bar">
+                  <span class="status-pill" id="bench-status-pill">Awaiting benchmark run</span>
+                  <span class="text-muted" id="bench-runtime">—</span>
+                </div>
+                <div class="bench-metrics-grid">
+                  <div class="metric-card metric-card--psnr" title="What: Peak Signal-to-Noise Ratio.&#10;Why: Measures pixel-level fidelity vs ground truth.&#10;Range: 0 to ∞ (Higher is better, >30 dB is excellent)." style="cursor:help;">
+                    <div class="metric-card__icon">📡</div>
+                    <span class="metric-card__label" style="font-size: 0.65rem; white-space: nowrap;">PSNR (vs Ground Truth) ℹ️</span>
+                    <strong class="metric-card__value" id="bm-psnr">—</strong>
+                    <span class="metric-card__unit">dB</span>
+                    <p class="metric-card__desc">Higher is better. Pixel-level fidelity vs. ground truth.</p>
+                  </div>
+                  <div class="metric-card metric-card--ssim" title="What: Structural Similarity Index.&#10;Why: Measures structural preservation (edges, shapes) which aligns better with human perception.&#10;Range: 0 to 1 (Closer to 1 is better)." style="cursor:help;">
+                    <div class="metric-card__icon">🔍</div>
+                    <span class="metric-card__label" style="font-size: 0.65rem; white-space: nowrap;">SSIM (vs Ground Truth) ℹ️</span>
+                    <strong class="metric-card__value" id="bm-ssim">—</strong>
+                    <span class="metric-card__unit">0–1</span>
+                    <p class="metric-card__desc">Structural similarity. Closer to 1 is better.</p>
+                  </div>
+                  <div class="metric-card metric-card--sam" title="What: Spectral Angle Mapper.&#10;Why: Measures color/spectral shift. Crucial for remote sensing.&#10;Range: 0 to π radians (Lower is better)." style="cursor:help;">
+                    <div class="metric-card__icon">🌈</div>
+                    <span class="metric-card__label" style="font-size: 0.65rem; white-space: nowrap;">SAM (vs Ground Truth) ℹ️</span>
+                    <strong class="metric-card__value" id="bm-sam">—</strong>
+                    <span class="metric-card__unit">rad</span>
+                    <p class="metric-card__desc">Spectral angle. Lower is better (less color shift).</p>
+                  </div>
+                  <div class="metric-card metric-card--prs" title="What: Physical Realism Score.&#10;Why: Measures how well the reconstructed image conforms to physical scattering laws.&#10;Range: 0 to ∞ (Lower error is better)." style="cursor:help;">
+                    <div class="metric-card__icon">⚛️</div>
+                    <span class="metric-card__label">PRS ℹ️</span>
+                    <strong class="metric-card__value" id="bm-prs">—</strong>
+                    <span class="metric-card__unit">lower↓</span>
+                    <p class="metric-card__desc">Physical Realism Score (ASM+SAM+NDVI residuals).</p>
+                  </div>
+                  <div class="metric-card metric-card--dice" title="What: Segmentation overlap metrics.&#10;Why: Checks how accurately the cloud mask was predicted.&#10;Range: 0 to 1 (1 is perfect overlap)." style="cursor:help;">
+                    <div class="metric-card__icon">🎯</div>
+                    <span class="metric-card__label">Dice ℹ️</span>
+                    <strong class="metric-card__value" id="bm-dice">—</strong>
+                    <span class="metric-card__unit">0–1</span>
+                    <p class="metric-card__desc">Mask overlap. Closer to 1 is better (RICE2).</p>
+                  </div>
+                  <div class="metric-card metric-card--iou" title="What: Intersection-over-Union.&#10;Why: Checks how accurately the cloud mask was predicted.&#10;Range: 0 to 1 (1 is perfect overlap)." style="cursor:help;">
+                    <div class="metric-card__icon">📐</div>
+                    <span class="metric-card__label">IoU ℹ️</span>
+                    <strong class="metric-card__value" id="bm-iou">—</strong>
+                    <span class="metric-card__unit">0–1</span>
+                    <p class="metric-card__desc">Intersection-over-Union for cloud mask detection.</p>
+                  </div>
+                  <div class="metric-card metric-card--cloud" title="What: Fraction of image classified as cloud.&#10;Why: Indicates how much of the image was obscured.&#10;Range: 0% to 100%" style="cursor:help;">
+                    <div class="metric-card__icon">☁️</div>
+                    <span class="metric-card__label">Cloud % ℹ️</span>
+                    <strong class="metric-card__value" id="bm-cloud">—</strong>
+                    <span class="metric-card__unit">%</span>
+                    <p class="metric-card__desc">Fraction of the image classified as cloud.</p>
+                  </div>
+                  <div class="metric-card metric-card--prs-asm" title="What: ASM Residual Component of PRS.&#10;Why: Specifically measures Atmospheric Scattering Model error.&#10;Range: 0 to ∞ (Lower is better)." style="cursor:help;">
+                    <div class="metric-card__icon">🌫️</div>
+                    <span class="metric-card__label">PRS-ASM ℹ️</span>
+                    <strong class="metric-card__value" id="bm-prs-asm">—</strong>
+                    <span class="metric-card__unit">lower↓</span>
+                    <p class="metric-card__desc">ASM physics residual component of PRS.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Result images -->
+              <div class="glass-card" id="bench-result-images" style="display:none;">
+                <h3>Restoration Output</h3>
+                <div class="bench-preview-grid bench-preview-grid--large">
+                  <div>
+                    <p class="text-muted" style="font-size:0.8rem;margin:0 0 6px;">DIP+PINN Output</p>
+                    <img id="bench-result-img" class="bench-thumb-lg" alt="Result" />
+                  </div>
+                  <div>
+                    <p class="text-muted" style="font-size:0.8rem;margin:0 0 6px;">Cloud Overlay</p>
+                    <img id="bench-overlay-img" class="bench-thumb-lg" alt="Overlay" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>

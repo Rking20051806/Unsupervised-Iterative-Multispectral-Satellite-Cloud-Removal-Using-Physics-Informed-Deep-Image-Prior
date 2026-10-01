@@ -1,0 +1,824 @@
+<div class="tab-panel" id="tab-dippinn">
+  <style>
+    #tab-dippinn {
+      padding: 0 !important;
+      margin: 0 !important;
+      display: none;
+    }
+
+    /* Prevent negative offsets shifting sidebar offscreen */
+    .page-shell,
+    .workspace {
+      margin-top: 0 !important;
+      transform: none !important;
+    }
+
+    #tab-dippinn.tab-panel--active {
+      display: block !important;
+    }
+
+    /* Modern 2-Column Dashboard Layout */
+    .dippinn-modern-layout {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 1200px) {
+      .dippinn-modern-layout {
+        grid-template-columns: 320px minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 950px) {
+      .dippinn-modern-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .dippinn-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .dippinn-scrollbar::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .dippinn-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.4);
+      border-radius: 3px;
+    }
+
+    /* Premium Glass Cards */
+    .premium-glass-card {
+      background: rgba(20, 23, 30, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--r-lg);
+      padding: 20px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    /* Floating Pill Toggle */
+    .pill-toggle-group {
+      display: flex;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 100px;
+      padding: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .pill-toggle-btn {
+      flex: 1;
+      border-radius: 100px;
+      padding: 8px 16px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: all 0.3s ease;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .pill-toggle-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .pill-toggle-btn.active, .pill-toggle-btn.btn--primary {
+      background: var(--neon-cyan);
+      color: #000;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    }
+
+    /* Glow Buttons */
+    .btn-glow-primary {
+      background: linear-gradient(135deg, var(--neon-cyan), #0284c7);
+      color: #fff;
+      border: none;
+      box-shadow: 0 4px 15px rgba(0, 240, 255, 0.2);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .btn-glow-primary:hover:not(:disabled) {
+      box-shadow: 0 6px 20px rgba(0, 240, 255, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-glow-secondary {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .btn-glow-secondary:hover:not(:disabled) {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    /* HUD Bar */
+    .dippinn-hud-bar {
+      display: flex;
+      gap: 15px;
+      background: rgba(20, 23, 30, 0.8);
+      border-radius: var(--r-lg);
+      padding: 15px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .dippinn-hud-item {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-right: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .dippinn-hud-item:last-child {
+      border-right: none;
+    }
+
+    .dippinn-hud-icon {
+      font-size: 1.5rem;
+      filter: drop-shadow(0 0 8px currentColor);
+    }
+
+    .dippinn-hud-title {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+    }
+
+    .dippinn-hud-value {
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+    }
+
+    /* Image Containers */
+    .dippinn-img-container {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #0f1115;
+      border-radius: var(--r-md);
+      border: 1px solid rgba(255,255,255,0.08);
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .dippinn-img-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .dippinn-img-container:hover {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+    }
+
+    /* View Tabs */
+    .modern-view-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .modern-view-tabs button {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-secondary);
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .modern-view-tabs button:hover, .modern-view-tabs button.btn--secondary {
+      background: rgba(255,255,255,0.1);
+      color: var(--text-primary);
+      border-color: rgba(255,255,255,0.2);
+    }
+    
+    .modern-view-tabs button.btn--secondary {
+      box-shadow: 0 0 10px rgba(255,255,255,0.05);
+    }
+
+    .dippinn-checklist {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .dippinn-checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      background: rgba(0,0,0,0.2);
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.05);
+      transition: all 0.2s;
+    }
+
+    .dippinn-checklist-item:hover {
+      background: rgba(255,255,255,0.05);
+    }
+
+    .dippinn-checklist-item input {
+      accent-color: var(--neon-cyan);
+    }
+
+    .dippinn-image-card {
+      padding: 10px 12px;
+      border-radius: var(--r-md);
+      border: 1px solid rgba(255,255,255,0.05);
+      cursor: pointer;
+      transition: all 0.3s;
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .dippinn-image-card:hover {
+      border-color: rgba(255,255,255,0.2);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .dippinn-image-card.active {
+      border-color: var(--neon-cyan);
+      background: rgba(0, 240, 255, 0.06);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.08);
+    }
+  </style>
+
+  <div class="dippinn-modern-layout">
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- LEFT PANEL: Command Center (360px)                        -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <div class="flex flex-col gap-5">
+      
+      <!-- 1. Dataset & Phase Control -->
+      <div class="premium-glass-card flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+          <h3 class="flex items-center gap-2 m-0 text-sm font-bold"><i data-lucide="database" class="w-4 h-4 text-cyan-400"></i> Explorer</h3>
+          <button type="button" id="dippinn-explorer-toggle-btn" class="btn btn--sm btn--ghost" 
+            onclick="(function(btn){
+              var body = document.getElementById('dippinn-explorer-body');
+              if(!body) return;
+              var isHidden = body.style.display === 'none';
+              body.style.display = isHidden ? 'flex' : 'none';
+              btn.innerHTML = isHidden ? '<i data-lucide=\'chevron-up\' class=\'w-3.5 h-3.5 inline-block mr-1\'></i> Hide' : '<i data-lucide=\'chevron-down\' class=\'w-3.5 h-3.5 inline-block mr-1\'></i> Open';
+              if(window.lucide) window.lucide.createIcons();
+            })(this)"
+            style="padding: 3px 10px; font-size: 0.72rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); color: #cbd5e1; display: inline-flex; items-center; gap: 4px; cursor: pointer; transition: all 0.2s ease;">
+            <i data-lucide="chevron-up" class="w-3.5 h-3.5 inline-block mr-1"></i> Hide
+          </button>
+        </div>
+
+        <!-- Collapsible Explorer Body -->
+        <div id="dippinn-explorer-body" class="flex flex-col gap-4" style="transition: all 0.3s ease;">
+          <!-- Phase toggle (Pill Shape) -->
+          <div class="pill-toggle-group">
+            <button type="button" id="dippinn-phase1-btn" class="pill-toggle-btn btn--primary">Phase 1 (Synth)</button>
+            <button type="button" id="dippinn-phase2-btn" class="pill-toggle-btn">Phase 2 (Real)</button>
+          </div>
+
+          <div style="position: relative;">
+            <input type="text" id="dippinn-search" class="glass-input" placeholder="Search samples..."
+              style="width: 100%; padding-left: 36px; border-radius: 100px; padding-top: 8px; padding-bottom: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff;" />
+            <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-zinc-500"></i>
+          </div>
+
+          <!-- Scrollable list -->
+          <div id="dippinn-image-list" class="dippinn-scrollbar"
+            style="overflow-y: auto; display: flex; flex-direction: column; gap: 8px; height: 180px;">
+            <!-- JS populated -->
+          </div>
+
+          <!-- Next/Prev buttons -->
+          <div style="display: flex; gap: 10px; padding-top: 5px;">
+            <button id="dippinn-prev-btn" class="btn btn--sm btn--ghost" style="flex: 1; border: 1px solid rgba(255,255,255,0.1);">◀ Prev</button>
+            <button id="dippinn-next-btn" class="btn btn--sm btn--ghost" style="flex: 1; border: 1px solid rgba(255,255,255,0.1);">Next ▶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Parameters & Actions -->
+      <div class="premium-glass-card flex flex-col gap-4">
+        <h3 class="flex items-center gap-2 m-0 text-sm font-bold"><i data-lucide="cpu" class="w-4 h-4 text-purple-400"></i> Physics Engine</h3>
+
+        <div style="display:flex; gap:10px;">
+          <div style="flex:1;">
+            <label class="field-label" style="font-size:0.7rem; color:var(--text-muted); margin-bottom:4px; display:block;">Optimizer</label>
+            <select id="dippinn-opt-select" class="glass-select" style="width:100%; padding:8px; font-size:0.8rem; border-radius:8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+              <option value="Adam">Adam</option>
+              <option value="AdamW">AdamW</option>
+              <option value="SGD">SGD</option>
+              <option value="RMSProp">RMSProp</option>
+            </select>
+          </div>
+          <div style="flex:1;">
+            <label class="field-label" title="What: Step size for the optimizer (Adam).&#10;Why: Controls how fast the network learns.&#10;Range: 0.0001 to 0.01" style="font-size:0.7rem; color:var(--text-muted); margin-bottom:4px; display:block; cursor:help;">Learn Rate ℹ️</label>
+            <input type="number" id="dippinn-lr-input" class="glass-input" step="0.001" value="0.005"
+              style="width:100%; padding:8px; font-size:0.8rem; text-align:center; border-radius:8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff;" />
+          </div>
+        </div>
+
+        <div>
+          <label class="field-label" title="What: Number of optimization steps.&#10;Why: More iterations allow the model to converge better.&#10;Range: 100 to 5000+" style="font-size:0.7rem; color:var(--text-muted); margin-bottom:4px; display:block; cursor:help;">Target Iterations ℹ️</label>
+          <input type="number" id="dippinn-iters-input" class="glass-input" value="5000"
+            style="width:100%; padding:8px; font-size:0.8rem; text-align:center; border-radius:8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff;" />
+        </div>
+
+        <!-- Synthetic Mask Controls (Phase 1) -->
+        <div id="dippinn-synth-controls" style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+          <div style="display:flex; gap:10px;">
+            <div style="flex:1;">
+              <label class="field-label" title="Shape of the synthetic cloud mask for Phase 1 testing." style="font-size:0.7rem; color:var(--text-muted); margin-bottom:4px; display:block; cursor:help;">Mask Shape ℹ️</label>
+              <select id="dippinn-mask-shape" class="glass-select" style="width:100%; padding:6px; font-size:0.8rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                <option value="Rectangle">Rectangle</option>
+                <option value="Circle">Circle</option>
+              </select>
+            </div>
+            <div style="flex:1;">
+              <label class="field-label" title="Size of the synthetic mask in pixels." style="font-size:0.7rem; color:var(--text-muted); margin-bottom:4px; display:block; cursor:help;">Size (px) ℹ️</label>
+              <input type="number" id="dippinn-mask-size" class="glass-input" value="64"
+                style="width:100%; padding:6px; font-size:0.8rem; text-align:center; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff;" />
+            </div>
+          </div>
+          <p style="font-size:9px; color:var(--neon-cyan); margin-top:8px; text-align:center;">Click Original image to move mask.</p>
+        </div>
+
+        <!-- PINN / Inpainting Loss Components & Weight Multipliers -->
+        <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+          <div class="flex items-center justify-between mb-3">
+            <label class="field-label m-0" title="Physics-Informed & Inpainting Loss Components. You can toggle checkboxes and customize weight multipliers (lambda)." style="font-size:0.75rem; color:var(--text-muted); font-weight: 700; cursor:help;">LOSS COMPONENTS & WEIGHTS ℹ️</label>
+            <div class="flex items-center gap-2">
+              <button type="button" id="dippinn-save-loss-btn" class="btn btn--sm" style="padding: 2px 8px; font-size: 0.65rem; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #34d399; border-radius: 4px; cursor: pointer;">💾 Save</button>
+              <button type="button" id="dippinn-reset-loss-btn" class="btn btn--sm" style="padding: 2px 8px; font-size: 0.65rem; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239,68,68,0.4); color: #f87171; border-radius: 4px; cursor: pointer;">✕ Reset</button>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2.5">
+            <!-- 1. ASM -->
+            <div class="flex items-center justify-between gap-2 p-2 rounded" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04);">
+              <label class="dippinn-checklist-item m-0 flex items-center gap-2 cursor-pointer flex-1" title="Atmospheric Scattering Model: I = J*t + A*(1-t)">
+                <input type="checkbox" class="dippinn-loss-chk" value="ASM" checked />
+                <span class="text-xs font-semibold text-cyan-400">ASM Loss</span>
+                <span class="text-[10px] text-zinc-500 hidden sm:inline">(Scattering Model)</span>
+              </label>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] text-zinc-400 font-mono">λ:</span>
+                <input type="number" id="dippinn-weight-asm" class="glass-input" value="1.0" step="0.1" min="0" max="10" style="width: 55px; padding: 3px 6px; font-size: 0.72rem; text-align: center; border-radius: 4px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff;" />
+              </div>
+            </div>
+
+            <!-- 2. TV -->
+            <div class="flex items-center justify-between gap-2 p-2 rounded" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04);">
+              <label class="dippinn-checklist-item m-0 flex items-center gap-2 cursor-pointer flex-1" title="Total Variation: Enforces spatial gradient smoothness">
+                <input type="checkbox" class="dippinn-loss-chk" value="TV" checked />
+                <span class="text-xs font-semibold text-emerald-400">TV Loss</span>
+                <span class="text-[10px] text-zinc-500 hidden sm:inline">(Total Variation)</span>
+              </label>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] text-zinc-400 font-mono">λ:</span>
+                <input type="text" id="dippinn-weight-tv" class="glass-input" value="0.05" style="width: 55px; padding: 3px 6px; font-size: 0.72rem; text-align: center; border-radius: 4px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff;" />
+              </div>
+            </div>
+
+            <!-- 3. Physical Range -->
+            <div class="flex items-center justify-between gap-2 p-2 rounded" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04);">
+              <label class="dippinn-checklist-item m-0 flex items-center gap-2 cursor-pointer flex-1" title="Physical Range Penalty: Restricts reflectance to [0, 1]">
+                <input type="checkbox" class="dippinn-loss-chk" value="Physical Range" checked />
+                <span class="text-xs font-semibold text-indigo-400">Range Penalty</span>
+                <span class="text-[10px] text-zinc-500 hidden sm:inline">([0.0, 1.0])</span>
+              </label>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] text-zinc-400 font-mono">λ:</span>
+                <input type="number" id="dippinn-weight-range" class="glass-input" value="10.0" step="1.0" min="0" max="100" style="width: 55px; padding: 3px 6px; font-size: 0.72rem; text-align: center; border-radius: 4px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff;" />
+              </div>
+            </div>
+
+            <!-- 4. DCP -->
+            <div class="flex items-center justify-between gap-2 p-2 rounded" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04);">
+              <label class="dippinn-checklist-item m-0 flex items-center gap-2 cursor-pointer flex-1" title="Dark Channel Prior: Haze-free natural image statistical prior">
+                <input type="checkbox" class="dippinn-loss-chk" value="DCP" />
+                <span class="text-xs font-semibold text-amber-400">DCP Prior</span>
+                <span class="text-[10px] text-zinc-500 hidden sm:inline">(Dark Channel)</span>
+              </label>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] text-zinc-400 font-mono">λ:</span>
+                <input type="number" id="dippinn-weight-dcp" class="glass-input" value="0.1" step="0.05" min="0" max="5" style="width: 55px; padding: 3px 6px; font-size: 0.72rem; text-align: center; border-radius: 4px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff;" />
+              </div>
+            </div>
+
+            <!-- 5. SCC -->
+            <div class="flex items-center justify-between gap-2 p-2 rounded" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04);">
+              <label class="dippinn-checklist-item m-0 flex items-center gap-2 cursor-pointer flex-1" title="Spatial Color Consistency: Color correlation between clear and reconstructed patches">
+                <input type="checkbox" class="dippinn-loss-chk" value="SCC" />
+                <span class="text-xs font-semibold text-pink-400">SCC Prior</span>
+                <span class="text-[10px] text-zinc-500 hidden sm:inline">(Color Consistency)</span>
+              </label>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] text-zinc-400 font-mono">λ:</span>
+                <input type="number" id="dippinn-weight-scc" class="glass-input" value="0.5" step="0.1" min="0" max="5" style="width: 55px; padding: 3px 6px; font-size: 0.72rem; text-align: center; border-radius: 4px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff;" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="margin-top: 10px;">
+          <button id="dippinn-detect-btn" class="btn btn-glow-secondary w-full mb-2" style="display:none; padding:10px;">☁ Detect Clouds (DL)</button>
+          
+          <div style="display:flex; gap:10px; width:100%;">
+            <button id="dippinn-start-btn" class="btn-glow-primary" style="flex:1; padding:12px; font-weight:bold; border-radius: 8px; font-size: 0.9rem;">▶ RUN ENGINE</button>
+            <button id="dippinn-stop-btn" class="btn" style="width:80px; padding:12px; background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 8px; font-weight:bold; cursor: pointer;" disabled>■ Stop</button>
+          </div>
+
+          <!-- Phase 1 Dedicated Actions -->
+          <div id="dippinn-phase1-actions" style="display:flex; flex-direction:column; gap:8px; margin-top:15px; border-top:1px solid rgba(255,255,255,0.05); padding-top:15px;">
+            <span style="font-size:0.65rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; text-align:center;">Phase 1 Sequential Execution</span>
+            <button id="btn-study-image" class="btn-glow-secondary" style="width:100%; font-size: 0.8rem; padding: 10px; border-radius: 6px;">1. Study Image Features</button>
+            <button id="btn-learn-orig" class="btn-glow-secondary" style="width:100%; font-size: 0.8rem; padding: 10px; border-radius: 6px;">2. Learn Original</button>
+            <button id="btn-recon-mask" class="btn-glow-primary" style="width:100%; font-size: 0.8rem; padding: 10px; border-radius: 6px;">3. Reconstruct Masked</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- RIGHT PANEL: Visualization & Telemetry (1fr)               -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <div class="flex flex-col gap-5 min-w-0" style="padding-top: 15px;">
+      
+      <!-- HUD Top Bar -->
+      <div class="dippinn-hud-bar">
+        <div class="dippinn-hud-item">
+          <span class="dippinn-hud-icon" style="color: var(--neon-cyan);">⚡</span>
+          <div>
+            <span class="dippinn-hud-title block">Status</span>
+            <span class="dippinn-hud-value" id="dippinn-hud-status">Idle</span>
+          </div>
+        </div>
+        <div class="dippinn-hud-item">
+          <span class="dippinn-hud-icon" style="color: var(--neon-purple);">🌀</span>
+          <div>
+            <span class="dippinn-hud-title block">Iteration</span>
+            <span class="dippinn-hud-value" id="dippinn-hud-iters">0 / 5000</span>
+          </div>
+        </div>
+        <div class="dippinn-hud-item">
+          <span class="dippinn-hud-icon" style="color: var(--neon-orange);">⏳</span>
+          <div>
+            <span class="dippinn-hud-title block">Elapsed</span>
+            <span class="dippinn-hud-value" id="dippinn-hud-time">0m 0s</span>
+          </div>
+        </div>
+        <div class="dippinn-hud-item">
+          <span class="dippinn-hud-icon" style="color: var(--neon-green);">📅</span>
+          <div>
+            <span class="dippinn-hud-title block">ETA</span>
+            <span class="dippinn-hud-value" id="dippinn-hud-eta">0m 0s</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Visualizer Area -->
+      <div class="premium-glass-card" style="flex: 1; display: flex; flex-direction: column;">
+        
+        <!-- View Selector -->
+        <div class="modern-view-tabs">
+          <button id="dippinn-view-grid-btn" class="btn--secondary">Grid View</button>
+          <button id="dippinn-view-slider-btn">Side-by-Side</button>
+          <button id="dippinn-view-scientific-btn">Scientific Data</button>
+        </div>
+
+        <div id="dippinn-views-container" style="flex: 1;">
+          <!-- Grid View -->
+          <div id="dippinn-view-grid" style="display: block;">
+            
+            <!-- Phase 1: 4-Panel Grid -->
+            <div id="dippinn-grid-phase1" class="grid grid-cols-2 gap-5">
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Reference</span>
+                  <span class="chip chip--blue">Input</span>
+                </div>
+                <div class="dippinn-img-container cursor-crosshair">
+                  <img id="dippinn-img-original" src="" style="display:none;" />
+                  <span class="img-placeholder text-muted text-xs" id="dippinn-img-original-ph">Select an image</span>
+                  <div id="dippinn-custom-mask-box" class="absolute border-2 border-red-500 bg-red-500/30 pointer-events-none transition-all" style="display:none; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);"></div>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Masked Input</span>
+                  <span class="chip chip--purple" id="dippinn-hud-cover" style="display:none;">Cover: 0%</span>
+                </div>
+                <div class="dippinn-img-container">
+                  <img id="dippinn-img-masked" src="" style="display:none;" />
+                  <span class="img-placeholder text-muted text-xs" id="dippinn-img-masked-ph">Awaiting preview</span>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Reconstruction</span>
+                  <span class="chip chip--green">Output</span>
+                </div>
+                <div class="dippinn-img-container">
+                  <img id="dippinn-img-reconstructed" src="" style="display:none;" />
+                  <span class="img-placeholder text-muted text-xs" id="dippinn-img-reconstructed-ph">Run optimization</span>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Difference</span>
+                  <span class="chip chip--default">Diff</span>
+                </div>
+                <div class="dippinn-img-container">
+                  <img id="dippinn-img-difference" src="" style="display:none;" />
+                  <span class="img-placeholder text-muted text-xs" id="dippinn-img-difference-ph">Run optimization</span>
+                </div>
+              </div>
+
+              <!-- Phase 1 Study Feature Grid -->
+              <div id="dippinn-study-features" class="col-span-2 grid grid-cols-3 gap-4 mt-4" style="display:none; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <div class="flex flex-col gap-2">
+                  <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Canny Edges</span>
+                  <div class="dippinn-img-container" style="border-radius: 8px;">
+                    <img id="phase1-edges" alt="Canny Edges" style="display:none;" />
+                    <div class="img-placeholder text-muted text-xs" id="ph-phase1-edges">Awaiting</div>
+                  </div>
+                </div>
+                <div class="flex flex-col gap-2">
+                  <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Texture Var</span>
+                    <span class="text-[9px] text-purple-400" id="phase1-texture-val" style="display:none;"></span>
+                  </div>
+                  <div class="dippinn-img-container" style="border-radius: 8px;">
+                    <img id="phase1-texture" alt="Texture map" style="display:none;" />
+                    <div class="img-placeholder text-muted text-xs" id="ph-phase1-texture">Awaiting</div>
+                  </div>
+                </div>
+                <div class="flex flex-col gap-2">
+                  <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">RGB Hist</span>
+                  <div class="dippinn-img-container" style="background:#1A1D23; border-radius: 8px;">
+                    <canvas id="phase1-rgb-chart" style="width:100%; height:100%; display:none;"></canvas>
+                    <div class="img-placeholder text-muted text-xs" id="ph-phase1-rgb">Awaiting</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Phase 2: 6-Panel Grid -->
+            <div id="dippinn-grid-phase2" class="grid grid-cols-3 gap-4" style="display:none;">
+              <!-- Original -->
+              <div class="flex flex-col gap-2">
+                <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Reference</span>
+                <div class="dippinn-img-container" style="border-radius: 8px;">
+                  <img id="dippinn-p2-img-original" src="" style="display:none;" />
+                  <span class="img-placeholder text-muted text-[10px]" id="dippinn-p2-img-original-ph">Select image</span>
+                </div>
+              </div>
+              <!-- Cloudy -->
+              <div class="flex flex-col gap-2">
+                <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Cloudy Input</span>
+                <div class="dippinn-img-container" style="border-radius: 8px;">
+                  <img id="dippinn-p2-img-cloudy" src="" style="display:none;" />
+                  <span class="img-placeholder text-muted text-[10px]" id="dippinn-p2-img-cloudy-ph">Select image</span>
+                </div>
+              </div>
+              <!-- Mask -->
+              <div class="flex flex-col gap-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">DL Mask</span>
+                  <span class="text-[9px] text-green-400 font-bold" id="dippinn-p2-hud-cover" style="display:none;"></span>
+                </div>
+                <div class="dippinn-img-container" style="border-radius: 8px;">
+                  <img id="dippinn-p2-img-mask" src="" style="display:none;" />
+                  <span class="img-placeholder text-muted text-[10px]" id="dippinn-p2-img-mask-ph">Run detection</span>
+                </div>
+              </div>
+              <!-- Transmission -->
+              <div class="flex flex-col gap-2">
+                <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Transmission</span>
+                <div class="dippinn-img-container" style="border-radius: 8px;">
+                  <img id="dippinn-p2-img-transmission" src="" style="display:none;" />
+                  <span class="img-placeholder text-muted text-[10px]" id="dippinn-p2-img-transmission-ph">Run detection</span>
+                </div>
+              </div>
+              <!-- Reconstruction -->
+              <div class="flex flex-col gap-2">
+                <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Reconstructed</span>
+                <div class="dippinn-img-container" style="border-radius: 8px;">
+                  <img id="dippinn-p2-img-reconstructed" src="" style="display:none;" />
+                  <span class="img-placeholder text-muted text-[10px]" id="dippinn-p2-img-reconstructed-ph">Run optim</span>
+                </div>
+              </div>
+              <!-- Difference -->
+              <div class="flex flex-col gap-2">
+                <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Difference</span>
+                <div class="dippinn-img-container" style="border-radius: 8px;">
+                  <img id="dippinn-p2-img-difference" src="" style="display:none;" />
+                  <span class="img-placeholder text-muted text-[10px]" id="dippinn-p2-img-difference-ph">Run optim</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slider View -->
+          <div id="dippinn-view-slider" style="display:none;" class="flex flex-col items-center w-full mt-4">
+            <div class="w-full max-w-[600px] aspect-square relative overflow-hidden bg-zinc-950 rounded-xl border border-zinc-800 shadow-[0_0_30px_rgba(0,240,255,0.1)]" id="dippinn-slider-container">
+              <img id="dippinn-slider-original" class="w-full h-full object-cover absolute top-0 left-0" src="" />
+              <div id="dippinn-slider-reconstructed-wrapper" class="absolute top-0 right-0 h-full overflow-hidden border-l-[3px] border-emerald-500 shadow-[-5px_0_15px_rgba(0,0,0,0.5)]" style="width: 50%;">
+                <img id="dippinn-slider-reconstructed" class="h-full object-cover" src="" style="width: 600px; max-width: none;" />
+              </div>
+            </div>
+            <div class="w-full max-w-[600px] mt-6 flex items-center gap-4 bg-zinc-900/50 p-3 rounded-full border border-white/5">
+              <span class="text-xs text-zinc-400 font-semibold uppercase pl-3">Original</span>
+              <input type="range" id="dippinn-slider-range" min="0" max="100" value="50" style="flex:1; accent-color:var(--neon-cyan); height: 6px; border-radius: 10px;" />
+              <span class="text-xs text-zinc-400 font-semibold uppercase pr-3">Reconstructed</span>
+            </div>
+          </div>
+
+          <!-- Scientific Telemetry View -->
+          <div id="dippinn-view-scientific" style="display:none;" class="space-y-6">
+            <div class="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 p-5 rounded-xl border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+              <h4 class="text-sm font-bold text-emerald-400 flex items-center gap-2 mb-2">
+                🔬 Physics-Based Verification & Validation
+              </h4>
+              <p class="text-xs text-zinc-400 leading-relaxed max-w-3xl">
+                PINNs enforce consistency constraints derived from optical physics. Below are the live scientific telemetry metrics checking the physical realism of the reconstructed image.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-5">
+              <!-- Cards -->
+              <div class="bg-zinc-900/60 p-5 rounded-xl border border-zinc-800 flex flex-col justify-between hover:border-emerald-500/30 transition-colors">
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-xs text-zinc-400 font-bold uppercase tracking-wider">ASM Residual</span>
+                  <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full font-bold" id="dippinn-sc-asm-status">✓ Optimal</span>
+                </div>
+                <div class="flex justify-between items-baseline pt-3 border-t border-zinc-800/50 mt-auto">
+                  <span class="text-xs text-zinc-500">Value</span>
+                  <span class="text-lg font-bold font-mono text-emerald-400" id="dippinn-sc-asm-val">0.0000</span>
+                </div>
+              </div>
+
+              <div class="bg-zinc-900/60 p-5 rounded-xl border border-zinc-800 flex flex-col justify-between hover:border-emerald-500/30 transition-colors">
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-xs text-zinc-400 font-bold uppercase tracking-wider">DCP Haze Metric</span>
+                  <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full font-bold" id="dippinn-sc-dcp-status">✓ Clean</span>
+                </div>
+                <div class="flex justify-between items-baseline pt-3 border-t border-zinc-800/50 mt-auto">
+                  <span class="text-xs text-zinc-500">DCP Mean</span>
+                  <span class="text-lg font-bold font-mono text-emerald-400" id="dippinn-sc-dcp-val">0.0000</span>
+                </div>
+              </div>
+
+              <div class="bg-zinc-900/60 p-5 rounded-xl border border-zinc-800 flex flex-col justify-between hover:border-emerald-500/30 transition-colors">
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-xs text-zinc-400 font-bold uppercase tracking-wider">Spectral Band Corr.</span>
+                  <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full font-bold" id="dippinn-sc-scc-status">✓ Authenticated</span>
+                </div>
+                <div class="flex justify-between items-baseline pt-3 border-t border-zinc-800/50 mt-auto">
+                  <span class="text-xs text-zinc-500">SCC Score</span>
+                  <span class="text-lg font-bold font-mono text-emerald-400" id="dippinn-sc-scc-val">0.0000</span>
+                </div>
+              </div>
+
+              <div class="bg-zinc-900/60 p-5 rounded-xl border border-zinc-800 flex flex-col justify-between hover:border-emerald-500/30 transition-colors">
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-xs text-zinc-400 font-bold uppercase tracking-wider">reflectance boundary</span>
+                  <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full font-bold">✓ Compliant</span>
+                </div>
+                <div class="flex justify-between items-baseline pt-3 border-t border-zinc-800/50 mt-auto">
+                  <span class="text-xs text-zinc-500">Violation Rate</span>
+                  <span class="text-lg font-bold font-mono text-emerald-400" id="dippinn-sc-violation-val">0.00%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-gradient-to-r from-blue-500/10 to-indigo-500/10 p-5 rounded-xl border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)] mt-6">
+              <h4 class="text-sm font-bold text-blue-400 flex items-center gap-2 mb-2">
+                📊 Segmentation Metrics
+              </h4>
+              <p class="text-xs text-zinc-400 leading-relaxed max-w-3xl">
+                Real-time segmentation performance against ground truth (when available).
+              </p>
+            </div>
+
+            <div class="grid grid-cols-4 gap-5">
+              <div class="bg-zinc-900/60 p-5 rounded-xl border border-zinc-800 flex flex-col justify-between hover:border-blue-500/30 transition-colors">
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-xs text-zinc-400 font-bold uppercase tracking-wider">IoU</span>
+                </div>
+                <div class="flex justify-between items-baseline pt-3 border-t border-zinc-800/50 mt-auto">
+                  <span class="text-xs text-zinc-500">Score</span>
+                  <span class="text-lg font-bold font-mono text-blue-400" id="dippinn-met-iou">—</span>
+                </div>
+              </div>
+              <div class="bg-zinc-900/60 p-5 rounded-xl border border-zinc-800 flex flex-col justify-between hover:border-blue-500/30 transition-colors">
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-xs text-zinc-400 font-bold uppercase tracking-wider">Dice</span>
+                </div>
+                <div class="flex justify-between items-baseline pt-3 border-t border-zinc-800/50 mt-auto">
+                  <span class="text-xs text-zinc-500">Score</span>
+                  <span class="text-lg font-bold font-mono text-blue-400" id="dippinn-met-dice">—</span>
+                </div>
+              </div>
+              <div class="bg-zinc-900/60 p-5 rounded-xl border border-zinc-800 flex flex-col justify-between hover:border-blue-500/30 transition-colors">
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-xs text-zinc-400 font-bold uppercase tracking-wider">Precision</span>
+                </div>
+                <div class="flex justify-between items-baseline pt-3 border-t border-zinc-800/50 mt-auto">
+                  <span class="text-xs text-zinc-500">Score</span>
+                  <span class="text-lg font-bold font-mono text-blue-400" id="dippinn-met-precision">—</span>
+                </div>
+              </div>
+              <div class="bg-zinc-900/60 p-5 rounded-xl border border-zinc-800 flex flex-col justify-between hover:border-blue-500/30 transition-colors">
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-xs text-zinc-400 font-bold uppercase tracking-wider">Recall</span>
+                </div>
+                <div class="flex justify-between items-baseline pt-3 border-t border-zinc-800/50 mt-auto">
+                  <span class="text-xs text-zinc-500">Score</span>
+                  <span class="text-lg font-bold font-mono text-blue-400" id="dippinn-met-recall">—</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Stacked Layout: Charts & Console (Full Width) -->
+      <div class="flex flex-col gap-5 mt-2">
+        <!-- 📈 Loss & Quality Progression Metrics (Full Width) -->
+        <div class="premium-glass-card p-4 flex flex-col gap-3 min-h-[300px]">
+          <span class="text-[11px] font-bold text-zinc-300 uppercase tracking-wider flex items-center justify-between">
+            <span>📈 Loss &amp; Quality Progression Metrics</span>
+            <span class="text-[10px] text-cyan-400 font-mono">Loss vs PSNR/SSIM</span>
+          </span>
+          <div class="grid grid-cols-2 gap-5 flex-1 min-h-[240px]">
+            <div class="relative h-full flex flex-col">
+              <span class="text-[10px] font-semibold text-blue-400 text-center mb-2">Physics &amp; DIP Loss Convergence Graph</span>
+              <div class="relative flex-1 min-h-[220px]"><canvas id="dippinn-loss-chart"></canvas></div>
+            </div>
+            <div class="relative h-full flex flex-col">
+              <span class="text-[10px] font-semibold text-emerald-400 text-center mb-2">Image Quality Progression (Reconstructed vs Ground Truth)</span>
+              <div class="relative flex-1 min-h-[220px]"><canvas id="dippinn-metric-chart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Telemetry Console Terminal (Full Width) -->
+        <div class="glass-card" style="padding: 0; margin: 0; display: flex; flex-direction: column; overflow: hidden; border-color: rgba(52, 211, 153, 0.25);">
+          <!-- Terminal Header Bar -->
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: rgba(3,7,18,0.8); border-bottom: 1px solid rgba(52,211,153,0.15);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <!-- Traffic light dots -->
+              <span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block;"></span>
+              <span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
+              <span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;"></span>
+              <span style="margin-left: 8px; font-family: var(--font-mono); font-size: 0.72rem; color: #6b7280; letter-spacing: 0.05em;">📡 TELEMETRY CONSOLE — LIVE STREAM</span>
+            </div>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <button onclick="document.getElementById('dippinn-console').textContent=''; "
+                style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:#6b7280;font-size:0.68rem;padding:2px 7px;cursor:pointer;" title="Clear log">✕ Clear</button>
+              <button onclick="navigator.clipboard.writeText(document.getElementById('dippinn-console').textContent).then(()=>showToast && showToast('Log copied!','success','📋'));"
+                style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:#6b7280;font-size:0.68rem;padding:2px 7px;cursor:pointer;" title="Copy logs">⎘ Copy</button>
+            </div>
+          </div>
+          <div id="dippinn-console" class="dippinn-scrollbar" style="height: 250px; overflow-y: auto; background: #030712; padding: 12px; font-family: var(--font-mono); font-size: 0.75rem; color: #34d399; line-height: 1.4; white-space: pre-wrap; margin-bottom: 0;">
+            <div style="color: #60a5fa;">[SYSTEM] Premium Interface Initialized. Waiting for input...</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

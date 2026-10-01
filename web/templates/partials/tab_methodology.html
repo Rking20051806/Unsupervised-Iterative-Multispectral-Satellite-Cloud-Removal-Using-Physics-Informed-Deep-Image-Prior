@@ -1,0 +1,88 @@
+<div class="tab-panel" id="tab-methodology">
+          <div class="methodology-container" style="display: flex; flex-direction: column; gap: 20px; padding: 10px;">
+            <div class="glass-card">
+              <h3
+                style="font-size: 1.3rem; margin-bottom: 12px; border-bottom: 1px solid rgba(99, 102, 241, 0.2); padding-bottom: 8px; color: var(--neon-blue);">
+                🛰️ Atmospheric Scattering Model (ASM)</h3>
+              <p style="margin-bottom: 12px;">The forward imaging process under cloud and aerosol cover is
+                mathematically modeled by the Atmospheric Scattering Model (ASM):</p>
+              <div class="math-block"
+                style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; text-align: center; margin: 16px 0; color: var(--neon-blue);">
+                I<sub>b</sub>(x) = J<sub>b</sub>(x) · t<sub>b</sub>(x) + A<sub>b</sub> · (1 - t<sub>b</sub>(x))
+              </div>
+              <p>Where:</p>
+              <ul style="margin-left: 20px; line-height: 1.6; color: var(--text-muted); margin-top: 8px;">
+                <li><strong>I<sub>b</sub>(x)</strong>: Observed reflectance for spectral band <em>b</em> at pixel
+                  coordinate <em>x</em>.</li>
+                <li><strong>J<sub>b</sub>(x)</strong>: Latent cloud-free surface reflectance (to be restored).</li>
+                <li><strong>t<sub>b</sub>(x)</strong>: Transmission map coefficient representing the fraction of light
+                  reaching the sensor without being scattered.</li>
+                <li><strong>A<sub>b</sub></strong>: Global atmospheric light vector corresponding to the scattering
+                  particle reflectance.</li>
+              </ul>
+            </div>
+
+            <div class="glass-card">
+              <h3
+                style="font-size: 1.3rem; margin-bottom: 12px; border-bottom: 1px solid rgba(99, 102, 241, 0.2); padding-bottom: 8px; color: var(--neon-purple);">
+                ⚛️ Radiative Transfer Equation (RTE) & Wavelength Coupling</h3>
+              <p style="margin-bottom: 12px;">To prevent spatial ambiguity between the transmission map t(x) and surface
+                reflectance J(x), we couple the transmission maps of all bands via the physical properties of Mie and
+                Rayleigh scattering (Beer-Lambert Law):</p>
+              <div class="math-block"
+                style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; text-align: center; margin: 16px 0; color: var(--neon-purple);">
+                t<sub>b</sub>(x) = exp(-β<sub>ext</sub>(λ<sub>b</sub>) · d(x))
+              </div>
+              <p style="margin-bottom: 12px;">The extinction coefficient <strong>β<sub>ext</sub>(λ<sub>b</sub>)</strong>
+                is modeled as a function of the central band wavelength <strong>λ<sub>b</sub></strong> using Ångström's
+                Law:</p>
+              <div class="math-block"
+                style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; text-align: center; margin: 16px 0; color: var(--neon-purple);">
+                β<sub>ext</sub>(λ<sub>b</sub>) = β<sub>Rayleigh</sub>(λ<sub>b</sub>) + c<sub>M</sub>(x) ·
+                λ<sub>b</sub><sup>-α</sup> + β<sub>absorption</sub>(λ<sub>b</sub>)
+              </div>
+              <p>By fitting the optical depths &tau;<sub>b</sub>(x) = -ln(t<sub>b</sub>(x)) to this equation across
+                bands, the optimizer solves a pixel-wise linear least squares system for the physical scene depth
+                <em>d(x)</em> and aerosol concentration <em>c<sub>M</sub>(x)</em>, guaranteeing that the estimated
+                transmission maps are physically and spectrally consistent.
+              </p>
+            </div>
+
+            <div class="glass-card">
+              <h3
+                style="font-size: 1.3rem; margin-bottom: 12px; border-bottom: 1px solid rgba(99, 102, 241, 0.2); padding-bottom: 8px; color: var(--text-primary);">
+                🧠 Deep Image Prior (DIP) + PINN Optimization Objective</h3>
+              <p style="margin-bottom: 12px;">The restoration is framed as a self-supervised task where a deep neural
+                network parameterized by &theta;<sub>J</sub>, &theta;<sub>t</sub> serves as a structural prior. The
+                model is optimized by minimizing a multi-term Physics-Informed loss function:</p>
+              <div class="math-block"
+                style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; text-align: left; margin: 16px 0; color: var(--text-primary); line-height: 1.6; overflow-x: auto; white-space: nowrap;">
+                <strong>L<sub>total</sub></strong> = &lambda;<sub>recon</sub>·L<sub>recon</sub> +
+                &lambda;<sub>asm</sub>·L<sub>asm</sub> + &lambda;<sub>rte</sub>·L<sub>rte</sub> +
+                &lambda;<sub>ndvi</sub>·L<sub>ndvi</sub> + &lambda;<sub>tv</sub>·L<sub>tv</sub> +
+                &lambda;<sub>sam</sub>·L<sub>sam</sub> + &lambda;<sub>t_prior</sub>·L<sub>t_prior</sub> +
+                &lambda;<sub>init</sub>·L<sub>init</sub>
+              </div>
+              <p>Where:</p>
+              <ul
+                style="margin-left: 20px; line-height: 1.6; color: var(--text-muted); display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; margin-top: 8px;">
+                <li><strong>L<sub>recon</sub> (Masked Reconstruction)</strong>: Optimizes top-of-atmosphere matching
+                  strictly on clear-sky pixels (where mask M = 0).</li>
+                <li><strong>L<sub>asm</sub> (Unmasked ASM)</strong>: Enforces the ASM forward model over the entire
+                  image. Set to 0.0 under clouds to prevent cloud leakage.</li>
+                <li><strong>L<sub>rte</sub> (Radiative Transfer Loss)</strong>: Penalty for deviation from physical
+                  wavelength-dependent extinction curve.</li>
+                <li><strong>L<sub>ndvi</sub> (NDVI Consistency)</strong>: Penalizes deviation in the NDVI index between
+                  original and restored images to preserve vegetation characteristics.</li>
+                <li><strong>L<sub>tv</sub> (Total Variation)</strong>: Penalizes high-frequency noise to enforce spatial
+                  smoothness in the transmission map.</li>
+                <li><strong>L<sub>sam</sub> (Spectral Angle Mapper)</strong>: Enforces spectral angle consistency
+                  between cloudy input and restored output on clear pixels.</li>
+                <li><strong>L<sub>t_prior</sub> (Transmission Prior)</strong>: Enforces high transmission (t &approx; 1)
+                  in clear pixels and penalizes high transmission in clouds.</li>
+                <li><strong>L<sub>init</sub> (Inpainting Anchor)</strong>: Anchors the output surface reflectance to the
+                  initial structural inpainting on clear pixels.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
