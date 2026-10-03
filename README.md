@@ -11,16 +11,15 @@ A state-of-the-art research and deployment platform for **Satellite & Remote Sen
 ---
 ## 📥 Download Complete Project
 
-You can download the full project package directly using the link below:
+Visit the Google Drive link below to view and download the complete project ZIP package:
 
-[![Download ZIP](https://img.shields.io/badge/Download-Project%20ZIP%20(Google%20Drive)-brightgreen?style=for-the-badge&logo=googledrive)](https://drive.google.com/uc?export=download&id=1yzkNbIjJVXBemhsO7fobuk3PCGyHGaeq)
+[![Open in Google Drive](https://img.shields.io/badge/Open%20in-Google%20Drive-4285F4?style=for-the-badge&logo=google-drive&logoColor=white)](https://drive.google.com/file/d/YOUR_FILE_ID/view?usp=sharing)
 
-> **Note:** Ensure your Google Drive file sharing permissions are set to **"Anyone with the link can view/download"**.
+👉 **[Visit Google Drive and download the project ZIP](https://drive.google.com/file/d/YOUR_FILE_ID/view?usp=sharing)**
 
-<Elicitations message="Would you like help with anything else for your README?">
-  <Elicitation label="Add build & setup steps" query="Can you help me format a installation and setup section for this README?" />
-  <Elicitation label="Preview markdown layout" query="Show me how the full header section of the README will look with the download badge added." />
-</Elicitations>
+> **Download instructions:** Open the Google Drive link, click the **Download** icon in the top-right corner, and save the ZIP file to your computer.
+
+> **Note:** Make sure the Google Drive file-sharing permission is set to **Anyone with the link – Viewer**.
 ## 📑 Table of Contents
 
 1. [System Architecture & Data Flow](#-system-architecture--data-flow)
