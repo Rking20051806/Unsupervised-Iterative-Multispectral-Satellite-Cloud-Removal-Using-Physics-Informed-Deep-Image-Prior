@@ -9,7 +9,18 @@
 A state-of-the-art research and deployment platform for **Satellite & Remote Sensing Cloud Detection, Cloud Removal, and Multi-Spectral Image Inpainting**. It couples **Deep Image Prior (DIP)** inductive bias with **Physics-Informed Neural Networks (PINN)** based on atmospheric radiative transfer models, all packaged in a modern FastAPI dashboard with **13 dedicated interactive operational tabs**.
 
 ---
+## 📥 Download Complete Project
 
+You can download the full project package directly using the link below:
+
+[![Download ZIP](https://img.shields.io/badge/Download-Project%20ZIP%20(Google%20Drive)-brightgreen?style=for-the-badge&logo=googledrive)](https://drive.google.com/uc?export=download&id=1yzkNbIjJVXBemhsO7fobuk3PCGyHGaeq)
+
+> **Note:** Ensure your Google Drive file sharing permissions are set to **"Anyone with the link can view/download"**.
+
+<Elicitations message="Would you like help with anything else for your README?">
+  <Elicitation label="Add build & setup steps" query="Can you help me format a installation and setup section for this README?" />
+  <Elicitation label="Preview markdown layout" query="Show me how the full header section of the README will look with the download badge added." />
+</Elicitations>
 ## 📑 Table of Contents
 
 1. [System Architecture & Data Flow](#-system-architecture--data-flow)
