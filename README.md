@@ -13,13 +13,15 @@ A state-of-the-art research and deployment platform for **Satellite & Remote Sen
 
 Visit the Google Drive link below to view and download the complete project ZIP package:
 
-[![Open in Google Drive](https://img.shields.io/badge/Open%20in-Google%20Drive-4285F4?style=for-the-badge&logo=google-drive&logoColor=white)](https://drive.google.com/file/d/YOUR_FILE_ID/view?usp=sharing)
+[![Open in Google Drive](https://img.shields.io/badge/Open%20in-Google%20Drive-4285F4?style=for-the-badge&logo=google-drive&logoColor=white)](https://drive.google.com/file/d/1yzkNbIjJVXBemhsO7fobuk3PCGyHGaeq/view?usp=sharing)
 
-👉 **[Visit Google Drive and download the project ZIP](https://drive.google.com/file/d/YOUR_FILE_ID/view?usp=sharing)**
+👉 **[Visit Google Drive and download the project ZIP](https://drive.google.com/file/d/1yzkNbIjJVXBemhsO7fobuk3PCGyHGaeq/view?usp=sharing)**
 
 > **Download instructions:** Open the Google Drive link, click the **Download** icon in the top-right corner, and save the ZIP file to your computer.
 
 > **Note:** Make sure the Google Drive file-sharing permission is set to **Anyone with the link – Viewer**.
+
+
 ## 📑 Table of Contents
 
 1. [System Architecture & Data Flow](#-system-architecture--data-flow)
