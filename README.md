@@ -9,6 +9,17 @@
 A state-of-the-art research and deployment platform for **Satellite & Remote Sensing Cloud Detection, Cloud Removal, and Multi-Spectral Image Inpainting**. It couples **Deep Image Prior (DIP)** inductive bias with **Physics-Informed Neural Networks (PINN)** based on atmospheric radiative transfer models, all packaged in a modern FastAPI dashboard with **13 dedicated interactive operational tabs**.
 
 ---
+
+## 🔬 Research & Project Credits
+
+* **Author / Developer:** Rohan Prashant Nandanwar
+* **Supervision & Guidance:** Dr. Jaya Saxena  
+  *Head, Student Project Interface Division (SPID)*  
+  *Training, Education & Outreach Group (TEOG), Management Systems Area (MSA)*  
+  **National Remote Sensing Centre (NRSC), ISRO, Hyderabad**
+
+---
+---
 ## 📥 Download Complete Project
 
 Visit the Google Drive link below to view and download the complete project ZIP package:
